@@ -1,0 +1,86 @@
+{
+  "id": "1293472",
+  "name": "mywebsite",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "我的个人网站图标库",
+  "glyphs": [
+    {
+      "icon_id": "29923",
+      "name": "appreciate",
+      "font_class": "appreciate",
+      "unicode": "e644",
+      "unicode_decimal": 58948
+    },
+    {
+      "icon_id": "29930",
+      "name": "favor_fill",
+      "font_class": "favorfill",
+      "unicode": "e64b",
+      "unicode_decimal": 58955
+    },
+    {
+      "icon_id": "29931",
+      "name": "favor",
+      "font_class": "favor",
+      "unicode": "e64c",
+      "unicode_decimal": 58956
+    },
+    {
+      "icon_id": "30413",
+      "name": "camera_fill",
+      "font_class": "camerafill",
+      "unicode": "e664",
+      "unicode_decimal": 58980
+    },
+    {
+      "icon_id": "43903",
+      "name": "appreciate_fill",
+      "font_class": "appreciatefill",
+      "unicode": "e6e3",
+      "unicode_decimal": 59107
+    },
+    {
+      "icon_id": "61143",
+      "name": "share",
+      "font_class": "share",
+      "unicode": "e6f3",
+      "unicode_decimal": 59123
+    },
+    {
+      "icon_id": "127305",
+      "name": "pic_fill",
+      "font_class": "picfill",
+      "unicode": "e72c",
+      "unicode_decimal": 59180
+    },
+    {
+      "icon_id": "240138",
+      "name": "write_fill",
+      "font_class": "writefill",
+      "unicode": "e760",
+      "unicode_decimal": 59232
+    },
+    {
+      "icon_id": "4124441",
+      "name": "oppose_fill_light",
+      "font_class": "oppose_fill_light",
+      "unicode": "e814",
+      "unicode_decimal": 59412
+    },
+    {
+      "icon_id": "4124442",
+      "name": "oppose_light",
+      "font_class": "oppose_light",
+      "unicode": "e815",
+      "unicode_decimal": 59413
+    },
+    {
+      "icon_id": "10588310",
+      "name": "扫码登录",
+      "font_class": "saomadenglu",
+      "unicode": "e71e",
+      "unicode_decimal": 59166
+    }
+  ]
+}
