@@ -1,9 +1,9 @@
 <template>
   <div style="height:100%;width:100%;display: flex;flex-flow: row;">
     <div class="left">
-      <span id="add-article"><i class="el-icon-circle-plus" style="margin: auto 10px auto 0px;color:#f2f2f2;"></i>新建文章</span>
+      <span id="add-article" @click="addArticle"><i class="el-icon-circle-plus" style="margin: auto 10px auto 0px;color:#f2f2f2;"></i>新建文章</span>
       <span id="article-list">
-        <span>文章一<i class="el-icon-circle-close" style="margin: auto 7px auto auto;color:#f2f2f2;"></i></span>
+        <span v-for="(item,index) in articleList" :key="index" @click="chooseArticle(index)" :class="{'activeArt': activeIdx === index}">{{item?(item.title || '无标题'):'无标题2'}}<i class="el-icon-circle-close" style="margin: auto 7px auto auto;color:#f2f2f2;" v-if="articleList.length>1" @click.capture="removeArticle(index)"></i></span>
       </span>
     </div>
     <div class="info">
@@ -50,30 +50,84 @@ import E from 'wangeditor'
     },
     data() {
 			return {
+        editor: null,
         inputVisible: false,
         inputValue: '',
         active: {
-          title: 'xx标题',
-          user: 'Holmesen',
-          date: '2019/09/16 23:13:00',
-          place: '福建省厦门市',
-          weather: '天气很好',
-          category: ['标签一', '标签二'],
+          title: '',
+          user: '',
+          date: '',
+          place: '',
+          weather: '',
+          category: [],
           content: ''
-        }
+        },
+        activeIdx: 0,
+        articleList: []
 			}
 		},
 		mounted() {
-      var editor = new E(this.$refs.editor)
-      editor.customConfig.uploadImgShowBase64 = true //图片以base64形式保存
-      editor.customConfig.onchange = (html) => {
-        this.active.content = html
+      this.editor = new E(this.$refs.editor)
+      this.editor.customConfig = {
+        // 上传图片到服务器的地址
+        uploadImgServer: 'http://localhost:3000/blog-image',
+        // 限制一次最多上传 1 张图片
+        uploadImgMaxLength: 1,
+        // 修改字段名
+        uploadFileName: 'file',
+        // 图片上传钩子
+        uploadImgHooks: {
+          success: (xhr, editor, result)=> {
+            // 图片上传并返回结果，图片插入成功之后触发
+            // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，result 是服务器端返回的结果
+            console.log('xhr: ', xhr)
+            console.log('editor: ', editor)
+            console.log('result: ', result)
+          }
+        },
+        // 编辑区值改变事件
+        onchange: (html) => {
+          this.active.content = html
+        },
+        // 支持粘贴的事件
+        pasteTextHandle: (content) => { //支持粘贴
+          return content
+        }
       }
-      editor.customConfig.pasteTextHandle = (content) => { //支持粘贴
-        return content
-      }
-      editor.create()
-      editor.txt.html('<p>用 JS 设置的内容</p>')
+      // // this.editor.customConfig.uploadImgShowBase64 = true //图片以base64形式保存
+      // this.editor.customConfig.uploadImgServer = 'http://localhost:3000/blog-image' // 上传图片到服务器，和上面的不能同时使用
+      // // 限制一次最多上传 1 张图片
+      // this.editor.customConfig.uploadImgMaxLength = 1
+      // // 修改字段名
+      // this.editor.customConfig.uploadFileName = 'file'
+      // this.editor.customConfig.uploadImgHooks = {
+      //   success: (xhr, editor, result)=> {
+      //     // 图片上传并返回结果，图片插入成功之后触发
+      //     // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，result 是服务器端返回的结果
+      //     console.log('xhr: ', xhr)
+      //     console.log('editor: ', editor)
+      //     console.log('result: ', result)
+      //   }
+      // }
+      // this.editor.customConfig.onchange = (html) => {
+      //   this.active.content = html
+      // }
+      // this.editor.customConfig.pasteTextHandle = (content) => { //支持粘贴
+      //   return content
+      // }
+      this.editor.create()
+      // editor.txt.html('<p>用 JS 设置的内容</p>')
+
+      // 初始给文章列表加一篇默认的空白文章
+      this.articleList.push({
+        title: '',
+        user: '',
+        date: '',
+        place: '',
+        weather: '',
+        category: [],
+        content: ''
+      })
 		},
 		methods: {
 
@@ -95,8 +149,44 @@ import E from 'wangeditor'
         }
         this.inputVisible = false
         this.inputValue = ''
+      },
+      addArticle() {
+        this.articleList.push({
+          title: '',
+          user: '',
+          date: '',
+          place: '',
+          weather: '',
+          category: [],
+          content: ''
+        })
+        this.activeIdx = this.articleList.length-1
+        this.active = this.articleList[this.articleList.length-1]
+      },
+      chooseArticle(index) {
+        this.activeIdx = index
+        this.active = this.articleList[index]
+      },
+      removeArticle(index) {
+        let list = this.articleList
+        this.activeIdx = 0
+        this.active = this.articleList[0]
+        list.splice(index, 1)
+        this.articleList = list
       }
-		}
+    },
+    
+    watch: {
+      'active': {
+        handler(newV, oldV) {
+          this.articleList[this.activeIdx] = this.active
+        },
+        deep: true
+      },
+      'activeIdx': function(newV, oldV) {
+        this.editor.txt.html(this.active.content)
+      }
+    }
   }
 </script>
 
@@ -144,9 +234,14 @@ import E from 'wangeditor'
   width: 100%; height: auto; display: flex; flex-flow: column; align-content: center;
 }
 #article-list>span{
-  height: auto; display: flex; text-align: left; border-left: solid 3px darkorange; font-size: 16px;
+  /* height: auto; display: flex; text-align: left; border-left: solid 3px darkorange; font-size: 16px;
   line-height: 2em; padding: 7px; margin: 10px 0px; background-color: #666666; cursor: pointer;
-  justify-content: space-between;
+  justify-content: space-between; */
+  height: auto; display: flex; text-align: left; font-size: 16px; justify-content: space-between; border-left: solid 3px rgba(102, 102, 102, 0);
+  line-height: 2em; padding: 7px; margin: 0px; background-color: rgba(102, 102, 102, 0); cursor: pointer; border-bottom: solid 1px rgba(102, 102, 102, 0.5);
+}
+#article-list>span:hover{
+  background-color: rgba(102, 102, 102);
 }
 .info{
   width: 20%; display: flex; flex-flow: column; padding: 10px; border-right: solid 1px #cccccc; overflow: auto;
@@ -173,5 +268,9 @@ import E from 'wangeditor'
 }
 .input-new-tag {
   width: 90px; margin-left: 10px; vertical-align: bottom;
+}
+
+.activeArt{
+  border-left: solid 3px darkorange !important; background-color: #666666 !important;
 }
 </style>
