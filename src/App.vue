@@ -6,13 +6,13 @@
       <router-view class="routerView" />
     </div>
 
-    <div class="side-div">
+    <!-- <div class="side-div">
       <div class="icon-div">
         <span title="撰写博客"><i class="sideicon iconfont iconwritefill"></i></span>
         <span title="上传照片"><i class="sideicon iconfont iconpicfill"></i></span>
         <span title="生活记事"><i class="sideicon iconfont iconcamerafill"></i></span>
       </div>
-    </div>
+    </div> -->
     <!-- <div class="mask"></div> -->
     <!-- <myfooter></myfooter> -->
   </div>

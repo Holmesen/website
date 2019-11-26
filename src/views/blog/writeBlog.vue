@@ -3,7 +3,7 @@
     <div class="left">
       <span id="add-article" @click="addArticle"><i class="el-icon-circle-plus" style="margin: auto 10px auto 0px;color:#f2f2f2;"></i>新建文章</span>
       <span id="article-list">
-        <span v-for="(item,index) in articleList" :key="index" @click="chooseArticle(index)" :class="{'activeArt': activeIdx === index}">{{item?(item.title || '无标题'):'无标题2'}}<i class="el-icon-circle-close" style="margin: auto 7px auto auto;color:#f2f2f2;" v-if="articleList.length>1" @click.capture="removeArticle(index)"></i></span>
+        <span v-for="(item,index) in articleList" :key="index" @click="chooseArticle(index)" :class="{'activeArt': activeIdx === index}">{{item?(item.title || '无标题'):'无标题2'}}<i class="el-icon-circle-close" style="margin: auto 7px auto auto;color:#f2f2f2;" v-if="articleList.length>1" @click.stop="removeArticle(index)"></i></span>
       </span>
     </div>
     <div class="info">
@@ -60,7 +60,8 @@ import E from 'wangeditor'
           place: '',
           weather: '',
           category: [],
-          content: ''
+          content: '',
+          isDel: false
         },
         activeIdx: 0,
         articleList: []
@@ -77,12 +78,37 @@ import E from 'wangeditor'
         uploadFileName: 'file',
         // 图片上传钩子
         uploadImgHooks: {
+          // 图片上传之前触发
+          before: function (xhr, editor, files) {
+            // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，files 是选择的图片文件
+            document.body.style.cursor = 'wait'
+          },
           success: (xhr, editor, result)=> {
             // 图片上传并返回结果，图片插入成功之后触发
             // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，result 是服务器端返回的结果
-            console.log('xhr: ', xhr)
-            console.log('editor: ', editor)
-            console.log('result: ', result)
+            document.body.style.cursor = 'auto'
+          },
+          // 图片上传并返回结果，但图片插入错误时触发
+          fail: function (xhr, editor, result) {
+            // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，result 是服务器端返回的结果
+            document.body.style.cursor = 'auto'
+          },
+          // 图片上传出错时触发
+          error: function (xhr, editor) {
+            // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象
+            document.body.style.cursor = 'auto'
+          },
+          // 图片上传超时时触发
+          timeout: function (xhr, editor) {
+            // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象
+            document.body.style.cursor = 'auto'
+          },
+          // 图片上传并返回结果，自定义插入图片的事件
+          customInsert: function (insertImg, result, editor) {
+            // insertImg 是插入图片的函数，editor 是编辑器对象，result 是服务器端返回的结果
+            var url = process.env.BASE_API + result.data.path
+            insertImg(url)
+            // result 必须是一个 JSON 格式字符串！！！否则报错
           }
         },
         // 编辑区值改变事件
@@ -94,27 +120,6 @@ import E from 'wangeditor'
           return content
         }
       }
-      // // this.editor.customConfig.uploadImgShowBase64 = true //图片以base64形式保存
-      // this.editor.customConfig.uploadImgServer = 'http://localhost:3000/blog-image' // 上传图片到服务器，和上面的不能同时使用
-      // // 限制一次最多上传 1 张图片
-      // this.editor.customConfig.uploadImgMaxLength = 1
-      // // 修改字段名
-      // this.editor.customConfig.uploadFileName = 'file'
-      // this.editor.customConfig.uploadImgHooks = {
-      //   success: (xhr, editor, result)=> {
-      //     // 图片上传并返回结果，图片插入成功之后触发
-      //     // xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，result 是服务器端返回的结果
-      //     console.log('xhr: ', xhr)
-      //     console.log('editor: ', editor)
-      //     console.log('result: ', result)
-      //   }
-      // }
-      // this.editor.customConfig.onchange = (html) => {
-      //   this.active.content = html
-      // }
-      // this.editor.customConfig.pasteTextHandle = (content) => { //支持粘贴
-      //   return content
-      // }
       this.editor.create()
       // editor.txt.html('<p>用 JS 设置的内容</p>')
 
@@ -126,7 +131,8 @@ import E from 'wangeditor'
         place: '',
         weather: '',
         category: [],
-        content: ''
+        content: '',
+        isDel: false
       })
 		},
 		methods: {
@@ -158,7 +164,8 @@ import E from 'wangeditor'
           place: '',
           weather: '',
           category: [],
-          content: ''
+          content: '',
+          isDel: false
         })
         this.activeIdx = this.articleList.length-1
         this.active = this.articleList[this.articleList.length-1]
@@ -168,11 +175,9 @@ import E from 'wangeditor'
         this.active = this.articleList[index]
       },
       removeArticle(index) {
-        let list = this.articleList
         this.activeIdx = 0
         this.active = this.articleList[0]
-        list.splice(index, 1)
-        this.articleList = list
+        this.articleList.splice(index, 1)
       }
     },
     
