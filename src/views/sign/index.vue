@@ -59,10 +59,11 @@
 
 <script>
 import {login, signup} from '../../apis/sign.js'
+import { Decrypt, Encrypt } from '../../utils/crypto'
   export default {
     data() {
       return {
-        baseURL: process.env.BASE_API,
+        baseURL: this.$store.getters.base_url,
         issignin: true,
         name: '',
         pwd: '',
@@ -92,18 +93,17 @@ import {login, signup} from '../../apis/sign.js'
     },
     methods: {
       signin() {
-        // this.$message.success('登录成功！')
-        login({
-          name: this.name,
-          pwd: this.pwd
-        }).then(res => {
-          this.$message.success('登录成功！')
-          console.log('请求成功：', res)
-        }).catch(err => {
-          console.error('请求失败：', err)
-        }).finally(() => {
-          console.info('请求完成！')
-        })
+        this.isloading = true
+        this.$store.dispatch('Login', { name: this.name, pwd: Encrypt(this.pwd) }).then(res=> {
+          if(res && (res.success || res.success==='true')) {
+            this.$message.success(res.message || '登录成功')
+          } else {
+            this.$message(res.message || res.msg)
+          }
+        }).catch(err=> {
+          console.error(err)
+          this.$message.error('登录失败')
+        }).finally(()=>{ this.isloading = false })
       },
       signup() {
         if(!this.infoForm.name || !this.infoForm.pwd) {
@@ -117,19 +117,30 @@ import {login, signup} from '../../apis/sign.js'
         if(this.infoForm.sex) {
           this.infoForm.sex = this.infoForm.sex==='男'?'1':'0'
         }
-        signup(this.infoForm).then(res=> {
-          this.$message.success('注册成功！')
+        this.infoForm.pwd = Encrypt(this.infoForm.pwd)
+        this.$store.dispatch('SignUp', this.infoForm).then(res=> {
+          if(res && (res.success || res.success==='true')) {
+            this.$message.success(res.message || '注册成功')
+            setTimeout(()=> {this.issignin = true}, 1500)
+          } else {
+            this.$message(res.message || res.msg)
+          }
         }).catch(err=> {
-          this.$message.error('注册失败！')
           console.error(err)
+          this.$message.error('注册失败')
         }).finally(()=>{ this.isloading2 = false })
+        // signup(this.infoForm).then(res=> {
+        //   this.$message.success('注册成功！')
+        // }).catch(err=> {
+        //   this.$message.error('注册失败！')
+        //   console.error(err)
+        // }).finally(()=>{ this.isloading2 = false })
       },
       handleAvatarSuccess(res, file) {
         // console.log('res: ', res)
         this.imageLocalUrl = URL.createObjectURL(file.raw)
         // console.log('上传头像成功！', this.imageUrl)
-        this.imageUrl = this.baseURL + (res.data.path || '')
-        this.infoForm.avatar = 'http://localhost:3000' + (res.data.path || '')
+        this.imageUrl = this.infoForm.avatar = this.baseURL + (res.data.path || '')
       },
       beforeAvatarUpload(file) {
         const isJPG = file.type === 'image/jpeg'
