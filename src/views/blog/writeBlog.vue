@@ -7,13 +7,13 @@
       </span>
     </div>
     <div class="info">
-      <span><el-button type="primary" round>发表文章</el-button></span>
+      <span><el-button type="primary" round @click="releaseBlog">发表文章</el-button></span>
       <span>
         <span><i class="el-icon-collection-tag"></i><b>标题：</b></span>
         <el-input placeholder="请输入标题" clearable v-model="active.title"></el-input>
       </span>
       <span><span><i class="el-icon-user-solid"></i><b>作者：</b></span>&emsp;{{active.user}}</span>
-      <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{active.date}}</span>
+      <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{dateTime}}</span>
       <span>
         <span><i class="el-icon-location"></i><b>地点：</b></span>
         <el-input placeholder="选填" clearable v-model="active.place"></el-input>
@@ -44,6 +44,8 @@
 
 <script>
 import E from 'wangeditor'
+import {NowTime} from '../../utils/time'
+import {release} from '../../apis/blog'
   export default {
     name: 'writeBlog',
     components: {
@@ -53,25 +55,28 @@ import E from 'wangeditor'
         editor: null,
         inputVisible: false,
         inputValue: '',
+        dateTime: '',
         active: {
           title: '',
-          user: '',
+          user: this.$store.getters.name || '',
           date: '',
           place: '',
           weather: '',
           category: [],
-          content: '',
-          isDel: false
+          content: ''
         },
         activeIdx: 0,
         articleList: []
 			}
 		},
 		mounted() {
+      setInterval(() => {
+        this.active.date = this.dateTime = NowTime()
+      }, 500)
       this.editor = new E(this.$refs.editor)
       this.editor.customConfig = {
         // 上传图片到服务器的地址
-        uploadImgServer: 'http://localhost:3000/blog-image',
+        uploadImgServer: process.env.BASE_API + '/upload/blog-image',
         // 限制一次最多上传 1 张图片
         uploadImgMaxLength: 1,
         // 修改字段名
@@ -106,7 +111,7 @@ import E from 'wangeditor'
           // 图片上传并返回结果，自定义插入图片的事件
           customInsert: function (insertImg, result, editor) {
             // insertImg 是插入图片的函数，editor 是编辑器对象，result 是服务器端返回的结果
-            var url = process.env.BASE_API + result.data.path
+            var url = result.data.path
             insertImg(url)
             // result 必须是一个 JSON 格式字符串！！！否则报错
           }
@@ -126,19 +131,18 @@ import E from 'wangeditor'
       // 初始给文章列表加一篇默认的空白文章
       this.articleList.push({
         title: '',
-        user: '',
-        date: '',
+        user: this.$store.getters.name || '',
+        date: this.dateTime,
         place: '',
         weather: '',
         category: [],
-        content: '',
-        isDel: false
+        content: ''
       })
 		},
 		methods: {
 
       handleClose(tag) {
-        this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1)
+        this.active.category.splice(this.active.category.indexOf(tag), 1)
       },
 
       showInput() {
@@ -151,7 +155,7 @@ import E from 'wangeditor'
       handleInputConfirm() {
         let inputValue = this.inputValue
         if (inputValue) {
-          this.dynamicTags.push(inputValue)
+          this.active.category.push(inputValue)
         }
         this.inputVisible = false
         this.inputValue = ''
@@ -159,13 +163,12 @@ import E from 'wangeditor'
       addArticle() {
         this.articleList.push({
           title: '',
-          user: '',
-          date: '',
+          user: this.$store.getters.name || '',
+          date: this.dateTime,
           place: '',
           weather: '',
           category: [],
-          content: '',
-          isDel: false
+          content: ''
         })
         this.activeIdx = this.articleList.length-1
         this.active = this.articleList[this.articleList.length-1]
@@ -178,6 +181,14 @@ import E from 'wangeditor'
         this.activeIdx = 0
         this.active = this.articleList[0]
         this.articleList.splice(index, 1)
+      },
+      releaseBlog() {
+        console.log(this.active)
+        release( this.active, this.$store.getters.token ).then(res=> {
+          console.log(res)
+        }).catch(err=> {
+          console.error(err)
+        })
       }
     },
     

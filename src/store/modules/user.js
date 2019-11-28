@@ -5,6 +5,7 @@ const user = {
   state: {
     base_url: 'http://localhost:3000',
     token: getToken(),
+    keyid: '',
     name: '',
     avatar: '',
     sex: '',
@@ -17,6 +18,9 @@ const user = {
   mutations: {
     SET_TOKEN: (state, token) => {
       state.token = token
+    },
+    SET_KEYID: (state, keyid) => {
+      state.keyid = keyid
     },
     SET_NAME: (state, name) => {
       state.name = name

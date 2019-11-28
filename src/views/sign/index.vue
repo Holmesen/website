@@ -21,7 +21,7 @@
     <div v-if="!issignin" class="signup-div">
       <span style="font-size:20px; line-height:1.5em; text-align:center; font-weight:bold;">注册</span>
       <span style="margin: 10px auto;">
-        <el-upload class="avatar-uploader" :action='this.baseURL+"/avatar"'
+        <el-upload class="avatar-uploader" :action='this.baseURL+"/upload/avatar"'
           :show-file-list="false" :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
           <img v-if="imageLocalUrl" :src="imageLocalUrl" class="avatar">
           <i v-else class="el-icon-picture-outline-round avatar-uploader-icon"></i>
@@ -140,7 +140,7 @@ import { Decrypt, Encrypt } from '../../utils/crypto'
         // console.log('res: ', res)
         this.imageLocalUrl = URL.createObjectURL(file.raw)
         // console.log('上传头像成功！', this.imageUrl)
-        this.imageUrl = this.infoForm.avatar = this.baseURL + (res.data.path || '')
+        this.imageUrl = this.infoForm.avatar = res.data.path || ''
       },
       beforeAvatarUpload(file) {
         const isJPG = file.type === 'image/jpeg'
