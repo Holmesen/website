@@ -1,25 +1,18 @@
 <template>
 	<div>
-		<h2 style="margin-top: 80px; etter-spacing: 7px; font-size: 26px;">XXX博客标题</h2>
+		<h2 style="margin-top: 80px; etter-spacing: 7px; font-size: 26px;">{{blog.title}}</h2>
 		<div class="author-div">
-			<span><i class="el-icon-user-solid"></i>Holmesen</span>
-			<span><i class="el-icon-date"></i>2019/07/20</span>
-			<span><i class="el-icon-view"></i>123</span>
+			<span><i class="el-icon-user-solid"></i>{{blog.user}}</span>
+			<span><i class="el-icon-date"></i>{{blog.updateTime || blog.date}}</span>
+			<span><i class="el-icon-view"></i>{{blog.views}}</span>
 		</div>
-		<div class="image-div">
-			<img src="../../assets/images/images/bg3.jpg" alt="">
-		</div>
-		<div class="content-div">
-			《一拳超人》讲述的是主人公埼玉原本是一名整日奔波于求职的普通人。三年前的一天偶然遇到了要对淘气少年下杀手的异变螃蟹人后，
-			回忆起年少年时“想要成为英雄”的梦想，最终拼尽全力救下了淘气少年。重拾对于成为英雄的兴趣之后，通过拼命锻炼，
-			埼玉终于脱胎换骨获得了最强的力量，但同时失去了头发成了光头，似乎还失去了某些感情。埼玉在独自做了一段时间英雄后，
-			与弟子杰诺斯一起，正式加入英雄协会，与众多英雄一起开始了对抗各种怪人以及灾难的生活。不过经常是在无人知晓的情况下做英雄的工作。
-		</div>
+		<!-- 博客内容 -->
+		<div id="blog-content" class="content-div" v-html="blog.content"></div>
 		<!-- 操作 -->
 		<div class="operate">
 			<span><i class="iconfont iconfavor" style="font-size:27px;"></i>收藏</span>
-			<span><i class="iconfont iconappreciate" style="font-size:27px;"></i>999</span>
-			<span><i class="iconfont iconoppose_light" style="font-size:27px;"></i>666</span>
+			<span><i class="iconfont iconappreciate" style="font-size:27px;"></i>{{blog.zan}}</span>
+			<span><i class="iconfont iconoppose_light" style="font-size:27px;"></i>{{blog.cai}}</span>
 			<span><i class="iconfont iconshare" style="font-size:27px;"></i>分享</span>
 		</div>
 		<div class="other">
@@ -57,11 +50,25 @@
 
 <script>
 import E from 'wangeditor'
+import {getList2Id} from '../../apis/blog.js'
 	export default {
 		name: 'blogInfo',
 		data() {
 			return {
-				editorContent: ''
+				editorContent: '',
+				blog: {
+					category: [],
+					title: '',
+					user: '',
+					date: '',
+					content: '',
+					views: 0,
+					zan: 0,
+					cai: 0,
+					collect: 0,
+					share: 0,
+					updateTime: ''
+				}
 			}
 		},
 		mounted() {
@@ -70,6 +77,9 @@ import E from 'wangeditor'
 				this.editorContent = html
 			}
 			editor.create()
+			getList2Id("cED5XcjymjdTSpC7").then(res=> {
+				this.blog = res.data.data[0]
+			})
 		},
 		methods: {
 			Comment() {

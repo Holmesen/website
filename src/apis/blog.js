@@ -14,3 +14,16 @@ export function release(formData, token) {
     }
   })
 }
+
+export function getList2Id(query) {
+  return service({
+    url: '/blog/get-idlist',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: {
+      blogid: query
+    }
+  })
+}
