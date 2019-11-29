@@ -132,6 +132,7 @@ import {release} from '../../apis/blog'
       this.articleList.push({
         title: '',
         user: this.$store.getters.name || '',
+        ukeyid: this.$store.getters.keyid,
         date: this.dateTime,
         place: '',
         weather: '',

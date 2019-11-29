@@ -5,8 +5,7 @@ export function release(formData, token) {
     url: '/blog/release',
     method: 'post',
     headers: {
-      'Content-Type': 'application/json;charset=UTF-8',
-      'Authorization': 'Bearer ' + token
+      'Content-Type': 'application/json;charset=UTF-8'
     },
     params: {},
     data: {
@@ -25,5 +24,16 @@ export function getList2Id(query) {
     params: {
       blogid: query
     }
+  })
+}
+
+export function operateBlog(formData) {
+  return service({
+    url: '/blog/operate',
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    data: formData
   })
 }

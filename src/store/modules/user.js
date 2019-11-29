@@ -53,6 +53,7 @@ const user = {
           const data = response.data.data
           setToken(data.token)
           commit('SET_TOKEN', data.token)
+          commit('SET_KEYID', data.keyid)
           commit('SET_NAME', data.name)
           commit('SET_AVATAR', data.avatar)
           commit('SET_SEX', data.sex)
@@ -94,6 +95,7 @@ const user = {
       return new Promise((resolve, reject) => {
         getUserInfo(state.token).then(response => {
           const data = response.data
+          commit('SET_KEYID', data.keyid)
           commit('SET_NAME', data.name)
           commit('SET_AVATAR', data.avatar)
           commit('SET_SEX', data.sex)
@@ -136,6 +138,7 @@ const user = {
     // 前端 登出
     FedLogOut({ commit }) {
       return new Promise(resolve => {
+        commit('SET_KEYID', '')
         commit('SET_TOKEN', '')
         commit('SET_NAME', '')
         commit('SET_AVATAR', '')

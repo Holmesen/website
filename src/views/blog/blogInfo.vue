@@ -11,8 +11,8 @@
 		<!-- 操作 -->
 		<div class="operate">
 			<span><i class="iconfont iconfavor" style="font-size:27px;"></i>收藏</span>
-			<span><i class="iconfont iconappreciate" style="font-size:27px;"></i>{{blog.zan}}</span>
-			<span><i class="iconfont iconoppose_light" style="font-size:27px;"></i>{{blog.cai}}</span>
+			<span><i class="iconfont iconappreciate" style="font-size:27px;" @click="zan"></i>{{blog.zan}}</span>
+			<span><i class="iconfont iconoppose_light" style="font-size:27px;" @click="cai"></i>{{blog.cai}}</span>
 			<span><i class="iconfont iconshare" style="font-size:27px;"></i>分享</span>
 		</div>
 		<div class="other">
@@ -50,7 +50,7 @@
 
 <script>
 import E from 'wangeditor'
-import {getList2Id} from '../../apis/blog.js'
+import {getList2Id, operateBlog} from '../../apis/blog.js'
 	export default {
 		name: 'blogInfo',
 		data() {
@@ -68,22 +68,116 @@ import {getList2Id} from '../../apis/blog.js'
 					collect: 0,
 					share: 0,
 					updateTime: ''
+				},
+				editor: null,
+				comment: {
+					user: '',
+					ukeyid: '',
+					blogId: '',
+					content: ''
 				}
 			}
 		},
 		mounted() {
-			var editor = new E(this.$refs.editor)
-			editor.customConfig.onchange = (html) => {
-				this.editorContent = html
+			if(this.$route.params.id) {
+				this.comment.blogId = this.id = this.$route.params.id
+				this.comment.user = this.$store.getters.name
+				this.comment.ukeyid = this.$store.getters.keyid
+				operateBlog({
+					blogId: this.id,
+					ukeyid: this.$store.getters.keyid || '',
+					type: 'views'
+				}).catch(err=> {
+					console.error(err)
+				})
+				getList2Id(this.id).then(res=> {
+					this.blog = res.data.data[0]
+				})
+				this.initEditor()
+			} else {
+				this.$router.push({path: '/blank'})
 			}
-			editor.create()
-			getList2Id("cED5XcjymjdTSpC7").then(res=> {
-				this.blog = res.data.data[0]
-			})
 		},
 		methods: {
 			Comment() {
-				console.log(this.editorContent)
+				// console.log(this.editorContent)
+			},
+			initEditor() {
+				this.editor = new E(this.$refs.editor)
+				this.editor.customConfig = {
+					// 上传图片到服务器的地址
+					uploadImgServer: process.env.BASE_API + '/upload/comment-image',
+					// 限制一次最多上传 1 张图片
+					uploadImgMaxLength: 1,
+					// 修改字段名
+					uploadFileName: 'file',
+					// 图片上传钩子
+					uploadImgHooks: {
+						// 图片上传之前触发
+						before: function (xhr, editor, files) {
+							// xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，files 是选择的图片文件
+							document.body.style.cursor = 'wait'
+						},
+						success: (xhr, editor, result)=> {
+							// 图片上传并返回结果，图片插入成功之后触发
+							// xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，result 是服务器端返回的结果
+							document.body.style.cursor = 'auto'
+						},
+						// 图片上传并返回结果，但图片插入错误时触发
+						fail: function (xhr, editor, result) {
+							// xhr 是 XMLHttpRequst 对象，editor 是编辑器对象，result 是服务器端返回的结果
+							document.body.style.cursor = 'auto'
+						},
+						// 图片上传出错时触发
+						error: function (xhr, editor) {
+							// xhr 是 XMLHttpRequst 对象，editor 是编辑器对象
+							document.body.style.cursor = 'auto'
+						},
+						// 图片上传超时时触发
+						timeout: function (xhr, editor) {
+							// xhr 是 XMLHttpRequst 对象，editor 是编辑器对象
+							document.body.style.cursor = 'auto'
+						},
+						// 图片上传并返回结果，自定义插入图片的事件
+						customInsert: function (insertImg, result, editor) {
+							// insertImg 是插入图片的函数，editor 是编辑器对象，result 是服务器端返回的结果
+							var url = result.data.path
+							insertImg(url)
+							// result 必须是一个 JSON 格式字符串！！！否则报错
+						}
+					},
+					// 编辑区值改变事件
+					onchange: (html) => {
+						this.comment.content = html
+					},
+					// 支持粘贴的事件
+					pasteTextHandle: (content) => { //支持粘贴
+						return content
+					}
+				}
+				this.editor.create()
+			},
+			zan() {
+				operateBlog({
+					blogId: this.id,
+					ukeyid: this.$store.getters.keyid,
+					type: 'zan'
+				}).then(res=> {
+					console.log(res)
+				}).catch(err=> {
+					console.error(err)
+				})
+			},
+			cai() {
+				operateBlog({
+					blogId: this.id,
+					ukeyid: this.$store.getters.keyid,
+					type: 'cai'
+				}).then(res=> {
+					console.log(res)
+				}).catch(err=> {
+					console.error(err)
+				})
 			}
 		}
 

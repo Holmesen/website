@@ -1,6 +1,7 @@
 const getters = {
   base_url: state => state.user.base_url,
   token: state => state.user.token,
+  keyid: state => state.user.keyid,
   name: state => state.user.name,
   avatar: state => state.user.avatar,
   sex: state => state.user.sex,

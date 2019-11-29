@@ -14,7 +14,7 @@ export default new Router({
     { path: '/album', name: 'album', component: _import('album/index') },
     { path: '/album/albumInfo', name: 'albumInfo', component: _import('album/albumInfo') },
     { path: '/blog', name: 'blog', component: _import('blog/index') },
-    { path: '/blog/blogInfo', name: 'blogInfo', component: _import('blog/blogInfo') },
+    { path: '/blog/blogInfo/:id', name: 'blogInfo', component: _import('blog/blogInfo') },
     { path: '/blog/writeBlog', name: 'writeBlog', component: _import('blog/writeBlog') },
     { path: '/life', name: 'life', component: _import('life/index') },
     { path: '/life/lifeInfo', name: 'lifeInfo', component: _import('life/lifeInfo') },
