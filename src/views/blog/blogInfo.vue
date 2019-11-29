@@ -11,8 +11,8 @@
 		<!-- 操作 -->
 		<div class="operate">
 			<span><i class="iconfont iconfavor" style="font-size:27px;"></i>收藏</span>
-			<span><i class="iconfont iconappreciate" style="font-size:27px;" @click="zan"></i>{{blog.zan}}</span>
-			<span><i class="iconfont iconoppose_light" style="font-size:27px;" @click="cai"></i>{{blog.cai}}</span>
+			<span><i class="iconfont iconappreciate" style="font-size:27px;" @click="zan" :style="{color: hasZan?'red':'#2c3e50'}"></i>{{blog.zan}}</span>
+			<span><i class="iconfont iconoppose_light" style="font-size:27px;" @click="cai" :style="{color: hasCai?'red':'#2c3e50'}"></i>{{blog.cai}}</span>
 			<span><i class="iconfont iconshare" style="font-size:27px;"></i>分享</span>
 		</div>
 		<div class="other">
@@ -69,6 +69,8 @@ import {getList2Id, operateBlog} from '../../apis/blog.js'
 					share: 0,
 					updateTime: ''
 				},
+				hasZan: false,
+				hasCai: false,
 				editor: null,
 				comment: {
 					user: '',
@@ -83,15 +85,19 @@ import {getList2Id, operateBlog} from '../../apis/blog.js'
 				this.comment.blogId = this.id = this.$route.params.id
 				this.comment.user = this.$store.getters.name
 				this.comment.ukeyid = this.$store.getters.keyid
-				operateBlog({
-					blogId: this.id,
-					ukeyid: this.$store.getters.keyid || '',
-					type: 'views'
-				}).catch(err=> {
-					console.error(err)
-				})
 				getList2Id(this.id).then(res=> {
 					this.blog = res.data.data[0]
+					operateBlog({
+						blogId: this.id,
+						ukeyid: this.$store.getters.keyid || '',
+						type: 'views'
+					}).then(res=> {
+						if(res.success) {
+							this.blog.views += 1
+						}
+					}).catch(err=> {
+						console.error(err)
+					})
 				})
 				this.initEditor()
 			} else {
@@ -158,26 +164,40 @@ import {getList2Id, operateBlog} from '../../apis/blog.js'
 				this.editor.create()
 			},
 			zan() {
-				operateBlog({
-					blogId: this.id,
-					ukeyid: this.$store.getters.keyid,
-					type: 'zan'
-				}).then(res=> {
-					console.log(res)
-				}).catch(err=> {
-					console.error(err)
-				})
+				if(!this.hasZan) {
+					operateBlog({
+						blogId: this.id,
+						ukeyid: this.$store.getters.keyid,
+						type: 'zan'
+					}).then(res=> {
+						if(res.data.success) {
+							this.blog.zan += 1
+							this.hasZan = true
+						}
+					}).catch(err=> {
+						console.error(err)
+					})
+				} else {
+					this.$message('你已经赞过了哦~')
+				}
 			},
 			cai() {
-				operateBlog({
-					blogId: this.id,
-					ukeyid: this.$store.getters.keyid,
-					type: 'cai'
-				}).then(res=> {
-					console.log(res)
-				}).catch(err=> {
-					console.error(err)
-				})
+				if(!this.hasCai) {
+					operateBlog({
+						blogId: this.id,
+						ukeyid: this.$store.getters.keyid,
+						type: 'cai'
+					}).then(res=> {
+						if(res.data.success) {
+							this.blog.cai += 1
+							this.hasCai = true
+						}
+					}).catch(err=> {
+						console.error(err)
+					})
+				} else {
+					this.$message('你已经踩过了哦，请手下留情吧~')
+				}
 			}
 		}
 

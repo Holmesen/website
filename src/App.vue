@@ -72,4 +72,8 @@ export default {
   font-size: 30px; line-height: 50px; margin: auto; width: 100%; height: 100%; 
   background-color: rgba(255, 255, 255, 0.7); color: #2C3E50; border-radius: 100px;
 }
+
+#app /deep/ .w-e-text-container, #app /deep/ .w-e-menu{
+  z-index: 888 !important;
+}
 </style>
