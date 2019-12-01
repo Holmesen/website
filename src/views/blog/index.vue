@@ -8,26 +8,19 @@
 		</div>
 
 		<div class="blogs">
-			<div class="blog-div" v-for="(item,index) in [1,2,3,4,5]" :key="index">
+			<div class="blog-div" v-for="(item,index) in blogList" :key="index">
 				<div class="blog-img">
-					<img src="../../assets/images/avatar.jpg" alt="">
+					<img :src="item.imgSrc" :alt="item.title" :title="item.title">
 				</div>
 				<div class="blog-content">
-					<div class="content-title">内容标题</div>
+					<div class="content-title" :title="item.title">{{item.title}}</div>
 					<div class="content-author">
-						<span><i class="el-icon-user-solid"></i>Holmesen</span>
-						<span><i class="el-icon-date"></i>2019/07/19</span>
-						<span><i class="el-icon-view"></i>123</span>
+						<span><i class="el-icon-user-solid"></i>{{item.user}}</span>
+						<span><i class="el-icon-date"></i>{{item.updateTime || item.date}}</span>
+						<span><i class="el-icon-view"></i>{{item.views}}</span>
 					</div>
-					<div class="content">
-						内容简要占位置内容简要占位置内容简要占位置内容简要占位置内容简要占位置
-						内容简要占位置内容简要占位置内容简要占位置内容简要占位置内容简要占位置
-						内容简要占位置内容简要占位置内容简要占位置内容简要占位置内容简要占位置
-						内容简要占位置内容简要占位置内容简要占位置内容简要占位置内容简要占位置
-						内容简要占位置内容简要占位置内容简要占位置内容简要占位置内容简要占位置
-						内容简要占位置内容简要占位置内容简要占位置内容简要占位置内容简要占位置
-					</div>
-					<div class="content-more" @click="toInfo">read more →</div>
+					<div class="content">{{item.description}}</div>
+					<div class="content-more" @click="toInfo(item.keyid)">Read More →</div>
 				</div>
 			</div>
 		</div>
@@ -35,17 +28,58 @@
 </template>
 
 <script>
+import {getBlogList} from '../../apis/blog.js'
 	export default {
 		name: 'blog',
 		data() {
 			return {
-				//
+				blogList: [],
+				loading: null
 			}
 		},
 		methods: {
-			toInfo() {
-				this.$router.push({path: '/blog/blogInfo'})
+			toInfo(blogId) {
+				this.$router.push({path: '/blog/blogInfo/'+blogId})
 			}
+		},
+		mounted() {
+			this.loading = this.$loading({
+				lock: true,
+				text: 'Loading...',
+				spinner: 'el-icon-loading',
+				background: 'rgba(0, 0, 0, 0.7)'
+			})
+			getBlogList().then(res=> {
+				if(res.data.success) {
+					if(res.data.data && res.data.data.length>0) {
+						var ele = document.createElement("div")
+						res.data.data.forEach(el => {
+							ele.innerHTML = el.content
+							el.description = (ele.innerText).substring(0, 100)
+							let imgs = ele.getElementsByTagName("img")
+							let src = '../../../static/images/noImage.jpg'
+							if(imgs && imgs.length>0) {
+								src = imgs[0].src
+							}
+							el.imgSrc = src
+						})
+						this.blogList = res.data.data
+					}
+				} else {
+					this.$notify({
+						title: '获取博客',
+						message: res.data.message || '博客获取失败',
+						type: 'error'
+					})
+				}
+			}).catch(err=> {
+				console.error(err)
+				this.$notify({
+					title: '获取博客',
+					message: '博客获取失败',
+					type: 'error'
+				})
+			}).finally(()=>{this.loading.close()})
 		}
 	}
 </script>
@@ -78,7 +112,7 @@
 	height: 200px; width: 200px; min-width: 200px;
 }
 .blog-img>img{
-	width: 100%; height: auto;
+	width: 100%; height: 100%; margin: auto;
 }
 .blog-content{
 	width: auto; height: 200px; flex-grow: 1; flex-flow: column; text-align: left; margin-left: 20px;
@@ -90,6 +124,8 @@
 }
 .content-title{
 	font-size: 20px; font-weight: bold; line-height: 40px;
+	display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1;
+	overflow: hidden; text-overflow: ellipsis; word-break: break-all;
 }
 .content-author{
 	flex-flow: row; float: left;

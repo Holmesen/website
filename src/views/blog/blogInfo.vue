@@ -4,6 +4,8 @@
 		<div class="author-div">
 			<span><i class="el-icon-user-solid"></i>{{blog.user}}</span>
 			<span><i class="el-icon-date"></i>{{blog.updateTime || blog.date}}</span>
+			<span v-if="blog.place"><i class="el-icon-location-outline"></i>{{blog.place || ''}}</span>
+			<span v-if="blog.weather"><i class="el-icon-sunny"></i>{{blog.weather ||''}}</span>
 			<span><i class="el-icon-view"></i>{{blog.views}}</span>
 		</div>
 		<!-- 博客内容 -->
@@ -50,7 +52,7 @@
 
 <script>
 import E from 'wangeditor'
-import {getList2Id, operateBlog} from '../../apis/blog.js'
+import {getBlogList2Id, operateBlog} from '../../apis/blog.js'
 	export default {
 		name: 'blogInfo',
 		data() {
@@ -61,6 +63,8 @@ import {getList2Id, operateBlog} from '../../apis/blog.js'
 					title: '',
 					user: '',
 					date: '',
+					place: '',
+					weather: '',
 					content: '',
 					views: 0,
 					zan: 0,
@@ -85,7 +89,7 @@ import {getList2Id, operateBlog} from '../../apis/blog.js'
 				this.comment.blogId = this.id = this.$route.params.id
 				this.comment.user = this.$store.getters.name
 				this.comment.ukeyid = this.$store.getters.keyid
-				getList2Id(this.id).then(res=> {
+				getBlogList2Id(this.id).then(res=> {
 					this.blog = res.data.data[0]
 					operateBlog({
 						blogId: this.id,

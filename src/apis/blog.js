@@ -1,6 +1,6 @@
 import {service} from '../utils/axios.js' // 导入axios实例文件中方法
 
-export function release(formData, token) {
+export function releaseBlog(formData) {
   return service({
     url: '/blog/release',
     method: 'post',
@@ -14,7 +14,7 @@ export function release(formData, token) {
   })
 }
 
-export function getList2Id(query) {
+export function getBlogList2Id(query) {
   return service({
     url: '/blog/get-idlist',
     method: 'get',
@@ -24,6 +24,17 @@ export function getList2Id(query) {
     params: {
       blogid: query
     }
+  })
+}
+
+export function getBlogList(query=null) {
+  return service({
+    url: '/blog/get-list',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: query
   })
 }
 

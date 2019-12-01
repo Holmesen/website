@@ -3,24 +3,24 @@
     <div class="left">
       <span id="add-article" @click="addArticle"><i class="el-icon-circle-plus" style="margin: auto 10px auto 0px;color:#f2f2f2;"></i>新建文章</span>
       <span id="article-list">
-        <span v-for="(item,index) in articleList" :key="index" @click="chooseArticle(index)" :class="{'activeArt': activeIdx === index}">{{item?(item.title || '无标题'):'无标题2'}}<i class="el-icon-circle-close" style="margin: auto 7px auto auto;color:#f2f2f2;" v-if="articleList.length>1" @click.stop="removeArticle(index)"></i></span>
+        <span v-for="(item,index) in articleList" :key="index" @click="chooseArticle(index)" :class="{'activeArt': activeIdx === index}"><span :title="item.title||'无标题'">{{item?(item.title || '无标题'):'无标题'}}</span><i class="el-icon-circle-close" style="margin: auto 7px auto auto;color:#f2f2f2;" v-if="articleList.length>1" @click.stop="removeArticle(index)"></i></span>
       </span>
     </div>
     <div class="info">
       <span><el-button type="primary" round @click="releaseBlog">发表文章</el-button></span>
       <span>
         <span><i class="el-icon-collection-tag"></i><b>标题：</b></span>
-        <el-input placeholder="请输入标题" clearable v-model="active.title"></el-input>
+        <el-input placeholder="请输入标题" clearable v-model="active.title" maxlength="50" show-word-limit></el-input>
       </span>
       <span><span><i class="el-icon-user-solid"></i><b>作者：</b></span>&emsp;{{active.user}}</span>
       <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{dateTime}}</span>
       <span>
         <span><i class="el-icon-location"></i><b>地点：</b></span>
-        <el-input placeholder="选填" clearable v-model="active.place"></el-input>
+        <el-input placeholder="选填" clearable v-model="active.place" maxlength="30" show-word-limit></el-input>
       </span>
       <span>
         <span><i class="el-icon-sunny"></i><b>天气：</b></span>
-        <el-input placeholder="选填" clearable v-model="active.weather"></el-input>
+        <el-input placeholder="选填" clearable v-model="active.weather" maxlength="10" show-word-limit></el-input>
       </span>
       <span>
         <span><i class="el-icon-price-tag"></i><b>标签：</b></span>
@@ -45,7 +45,7 @@
 <script>
 import E from 'wangeditor'
 import {NowTime} from '../../utils/time'
-import {release} from '../../apis/blog'
+import {releaseBlog} from '../../apis/blog'
   export default {
     name: 'writeBlog',
     components: {
@@ -59,6 +59,7 @@ import {release} from '../../apis/blog'
         active: {
           title: '',
           user: this.$store.getters.name || '',
+          ukeyid: this.$store.getters.keyid,
           date: '',
           place: '',
           weather: '',
@@ -66,7 +67,8 @@ import {release} from '../../apis/blog'
           content: ''
         },
         activeIdx: 0,
-        articleList: []
+        articleList: [],
+        loading: null
 			}
 		},
 		mounted() {
@@ -165,6 +167,7 @@ import {release} from '../../apis/blog'
         this.articleList.push({
           title: '',
           user: this.$store.getters.name || '',
+          ukeyid: this.$store.getters.keyid,
           date: this.dateTime,
           place: '',
           weather: '',
@@ -183,12 +186,62 @@ import {release} from '../../apis/blog'
         this.active = this.articleList[0]
         this.articleList.splice(index, 1)
       },
+      /**
+       * 发布博客
+       */
       releaseBlog() {
-        console.log(this.active)
-        release( this.active, this.$store.getters.token ).then(res=> {
-          console.log(res)
+        if(!this.active.title) {
+          this.$message.error("请填写标题")
+          return
+        }
+        if(!this.active.content) {
+          this.$message.error("请填写内容")
+          return
+        }
+        this.openFullScreen()
+        releaseBlog( this.active, this.$store.getters.token ).then(res=> {
+          if(res.data.success) {
+            // this.$message.success(res.message || '博客发布成功')
+            this.$notify({
+              title: '发布博客',
+              message: res.data.message || '博客发布成功',
+              type: 'success'
+            })
+            this.active = {
+              title: '',
+              user: this.$store.getters.name || '',
+              ukeyid: this.$store.getters.keyid,
+              date: '',
+              place: '',
+              weather: '',
+              category: [],
+              content: ''
+            }
+            this.editor.txt.html('')
+          } else {
+            // this.$message(res.message || '博客发布失败')
+            this.$notify({
+              title: '发布博客',
+              message: res.data.message || '博客发布失败',
+              type: 'error'
+            })
+          }
         }).catch(err=> {
+          // this.$message.error('博客发布失败')
+          this.$notify({
+            title: '发布博客',
+            message: '博客发布失败',
+            type: 'error'
+          })
           console.error(err)
+        }).finally(()=> { this.loading.close() })
+      },
+      openFullScreen() {
+        this.loading = this.$loading({
+          lock: true,
+          text: '博客发布ing...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
         })
       }
     },
@@ -251,11 +304,13 @@ import {release} from '../../apis/blog'
   width: 100%; height: auto; display: flex; flex-flow: column; align-content: center;
 }
 #article-list>span{
-  /* height: auto; display: flex; text-align: left; border-left: solid 3px darkorange; font-size: 16px;
-  line-height: 2em; padding: 7px; margin: 10px 0px; background-color: #666666; cursor: pointer;
-  justify-content: space-between; */
   height: auto; display: flex; text-align: left; font-size: 16px; justify-content: space-between; border-left: solid 3px rgba(102, 102, 102, 0);
   line-height: 2em; padding: 7px; margin: 0px; background-color: rgba(102, 102, 102, 0); cursor: pointer; border-bottom: solid 1px rgba(102, 102, 102, 0.5);
+  
+}
+#article-list>span>span{
+  max-width: calc(100% - 20px); word-break: break-all; display: -webkit-inline-box; text-overflow: -o-ellipsis-lastline; overflow: hidden; text-overflow: ellipsis; 
+  -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
 }
 #article-list>span:hover{
   background-color: rgba(102, 102, 102);
