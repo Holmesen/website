@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<h2 style="margin-top: 80px; etter-spacing: 7px; font-size: 26px;">{{blog.title}}</h2>
+		<h2 style="width:60%; margin: 50px auto 27px auto; etter-spacing: 7px; font-size: 26px; word-break: break-all;">{{blog.title}}</h2>
 		<div class="author-div">
 			<span><i class="el-icon-user-solid"></i>{{blog.user}}</span>
 			<span><i class="el-icon-date"></i>{{blog.updateTime || blog.date}}</span>
@@ -8,6 +8,7 @@
 			<span v-if="blog.weather"><i class="el-icon-sunny"></i>{{blog.weather ||''}}</span>
 			<span><i class="el-icon-view"></i>{{blog.views}}</span>
 		</div>
+		<div class="tags" v-if="blog.category.length>0"><span v-for="(item,index) in blog.category" :key="index"><el-tag>{{item}}</el-tag></span></div>
 		<!-- 博客内容 -->
 		<div id="blog-content" class="content-div" v-html="blog.content"></div>
 		<!-- 操作 -->
@@ -213,13 +214,19 @@ import {getBlogList2Id, operateBlog} from '../../apis/blog.js'
 	display: flex; flex-flow: column; align-content: center;
 } */
 .author-div{
-	display: flex; flex-flow: row; width: 60%; margin: auto;
+	display: flex; flex-flow: row; width: 60%; margin: 10px auto;
 }
 .author-div>span{
 	margin: auto; display: flex; flex-flow: row; font-size: 17px; line-height: 40px;
 }
 .author-div>span>i{
 	height: 18px; margin: auto 5px auto 0px;
+}
+.tags{
+	width: 60%; margin: 10px auto;
+}
+.tags>span{
+	margin: auto 13px;
 }
 .image-div{
 	width: 60%; height: auto; margin: 10px auto;
