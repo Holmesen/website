@@ -50,6 +50,7 @@ import {getBlogList} from '../../apis/blog.js'
 				background: 'rgba(0, 0, 0, 0.7)'
 			})
 			getBlogList().then(res=> {
+				debugger
 				if(res.data.success) {
 					if(res.data.data && res.data.data.length>0) {
 						var ele = document.createElement("div")

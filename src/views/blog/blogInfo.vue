@@ -26,25 +26,24 @@
 		<div class="editor-div">
 			<el-divider content-position="left" style="font-size:16px;font-weight:bold;">发表评论</el-divider>
 			<div ref="editor" style="text-align:left"></div>
-			<div class="submit"><el-button type="primary" round @click="Comment">发表评论</el-button></div>
+			<div class="submit"><el-button type="primary" round @click="Comment" :loading="isloading2">发表评论</el-button></div>
 		</div>
 		<div class="comment-div">
-			<div v-for="(item,index) in [1,2,3]" :key="index">
+			<h4 v-if="commentList.length<=0">暂无评论，快来抢沙发吧~</h4>
+			<div v-for="(item,index) in commentList" :key="index">
 				<div class="comment-top">
 					<div class="comment-top-left">
-						<img src="../../assets/images/avatar.jpg" alt="">
-						<span>Holmesen</span>
-						<span>2019/07/14</span>
+						<img :src="item.avatar" :alt="item.name">
+						<span>{{item.name}}</span>
+						<span>{{item.date}}</span>
 					</div>
 					<div class="comment-top-right">
-						<span><i class="iconfont iconappreciate" style="font-size:18px;margin-right:5px;"></i>999</span>
-						<span><i class="iconfont iconoppose_light" style="font-size:18px;margin-right:5px;"></i>666</span>
+						<span><i class="iconfont iconappreciate" style="font-size:18px;margin-right:5px;"></i>{{item.zan}}</span>
+						<span><i class="iconfont iconoppose_light" style="font-size:18px;margin-right:5px;"></i>{{item.cai}}</span>
 					</div>
 				</div>
 				<div class="comment-bottom">
-					<span>
-						<p>埼玉在独自做了一段时间英雄后，与弟子杰诺斯一起，正式加入英雄协会，与众多英雄一起开始了对抗各种怪人以及灾难的生活。不过经常是在无人知晓的情况下做英雄的工作。<img src="http://img.t.sinajs.cn/t4/appstyle/expression/ext/normal/50/pcmoren_huaixiao_org.png" alt="[坏笑]" data-w-e="1"></p>
-					</span>
+					<span v-html="item.content"></span>
 				</div>
 			</div>
 		</div>
@@ -53,7 +52,7 @@
 
 <script>
 import E from 'wangeditor'
-import {getBlogList2Id, operateBlog} from '../../apis/blog.js'
+import {getBlogList2Id, operateBlog, commentBlog, getBlogComment} from '../../apis/blog.js'
 	export default {
 		name: 'blogInfo',
 		data() {
@@ -78,20 +77,24 @@ import {getBlogList2Id, operateBlog} from '../../apis/blog.js'
 				hasCai: false,
 				editor: null,
 				comment: {
-					user: '',
 					ukeyid: '',
-					blogId: '',
-					content: ''
-				}
+					bkeyid: '',
+					content: '',
+					type: '0' // 评论对象类型：0=>博客; 1=>生活记事
+				},
+				commentList: [],
+				loading: null,
+				isloading2: false
 			}
 		},
 		mounted() {
+			this.comment.ukeyid = this.$store.getters.keyid
 			if(this.$route.params.id) {
-				this.comment.blogId = this.id = this.$route.params.id
-				this.comment.user = this.$store.getters.name
-				this.comment.ukeyid = this.$store.getters.keyid
+				this.comment.bkeyid = this.id = this.$route.params.id
+				this.openFullScreen()
 				getBlogList2Id(this.id).then(res=> {
 					this.blog = res.data.data[0]
+					this.getComment()
 					operateBlog({
 						blogId: this.id,
 						ukeyid: this.$store.getters.keyid || '',
@@ -103,7 +106,9 @@ import {getBlogList2Id, operateBlog} from '../../apis/blog.js'
 					}).catch(err=> {
 						console.error(err)
 					})
-				})
+				}).catch(err=> {
+					console.error(err)
+				}).finally(()=>{this.loading.close()})
 				this.initEditor()
 			} else {
 				this.$router.push({path: '/blank'})
@@ -111,7 +116,55 @@ import {getBlogList2Id, operateBlog} from '../../apis/blog.js'
 		},
 		methods: {
 			Comment() {
-				// console.log(this.editorContent)
+				if(!this.comment.bkeyid) {
+					return
+				}
+				this.isloading2 = true
+				commentBlog(this.comment).then(res=> {
+					if(res.data.success) {
+						this.$notify({
+							title: '博客评论',
+							message: res.data.message || '博客评论成功',
+							type: 'success'
+						})
+						this.getComment()
+					} else {
+						this.$notify({
+							title: '博客评论',
+							message: res.data.message || '博客评论失败',
+							type: 'error'
+						})
+					}
+				}).catch(err=> {
+					console.error(err)
+					this.$notify({
+						title: '博客评论',
+						message: '博客评论失败',
+						type: 'error'
+					})
+				}).finally(()=>{this.isloading2 = false})
+			},
+			getComment() {
+				getBlogComment({blogId: this.id}).then(res=> {
+					if(res.data.success) {
+						if(res.data.data && res.data.data.length>0) {
+							this.commentList = res.data.data
+						}
+					} else {
+						this.$notify({
+							title: '获取博客评论',
+							message: res.data.message || '获取博客评论失败',
+							type: 'error'
+						})
+					}
+				}).catch(err=> {
+					console.error(err)
+					this.$notify({
+						title: '获取博客评论',
+						message: '获取博客评论失败',
+						type: 'error'
+					})
+				})
 			},
 			initEditor() {
 				this.editor = new E(this.$refs.editor)
@@ -203,7 +256,15 @@ import {getBlogList2Id, operateBlog} from '../../apis/blog.js'
 				} else {
 					this.$message('你已经踩过了哦，请手下留情吧~')
 				}
-			}
+			},
+			openFullScreen() {
+        this.loading = this.$loading({
+          lock: true,
+          text: 'Loading...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        })
+      }
 		}
 
 	}

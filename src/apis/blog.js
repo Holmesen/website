@@ -48,3 +48,25 @@ export function operateBlog(formData) {
     data: formData
   })
 }
+
+export function commentBlog(formData) {
+  return service({
+    url: '/blog/comment',
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    data: formData
+  })
+}
+
+export function getBlogComment(query) {
+  return service({
+    url: '/blog/get-comment',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: query
+  })
+}
