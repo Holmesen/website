@@ -14,8 +14,8 @@
 		<!-- 操作 -->
 		<div class="operate">
 			<span><i class="iconfont iconfavor" style="font-size:27px;"></i>收藏</span>
-			<span><i class="iconfont iconappreciate" style="font-size:27px;" @click="zan" :style="{color: hasZan?'red':'#2c3e50'}"></i>{{blog.zan}}</span>
-			<span><i class="iconfont iconoppose_light" style="font-size:27px;" @click="cai" :style="{color: hasCai?'red':'#2c3e50'}"></i>{{blog.cai}}</span>
+			<span><i class="iconfont iconappreciate" style="font-size:27px;" @click="zan" :style="{color: record.zan?'red':'#2c3e50'}"></i>{{blog.zan}}</span>
+			<span><i class="iconfont iconoppose_light" style="font-size:27px;" @click="cai" :style="{color: record.cai?'red':'#2c3e50'}"></i>{{blog.cai}}</span>
 			<span><i class="iconfont iconshare" style="font-size:27px;"></i>分享</span>
 		</div>
 		<div class="other">
@@ -52,7 +52,7 @@
 
 <script>
 import E from 'wangeditor'
-import {getBlogList2Id, operateBlog, commentBlog, getBlogComment} from '../../apis/blog.js'
+import {getBlogList2Id, operateBlog, commentBlog, getBlogComment, getBlogRecord} from '../../apis/blog.js'
 import {UTC2Local} from '../../utils/time'
 	export default {
 		name: 'blogInfo',
@@ -83,7 +83,15 @@ import {UTC2Local} from '../../utils/time'
 					content: '',
 					type: '0' // 评论对象类型：0=>博客; 1=>生活记事
 				},
-				commentList: [],
+				commentList: [], // 评论列表
+				recordList: [], // 操作信息列表
+				record: {
+					zan: false,
+					cai: false,
+					share: false,
+					views: false,
+					collect: false
+				},
 				loading: null,
 				isloading2: false
 			}
@@ -98,6 +106,7 @@ import {UTC2Local} from '../../utils/time'
 					res.data.data[0].updateTime = UTC2Local(res.data.data[0].updateTime)
 					this.blog = res.data.data[0]
 					this.getComment()
+					this.getBlogRecord()
 					operateBlog({
 						blogId: this.id,
 						ukeyid: this.$store.getters.keyid || '',
@@ -228,7 +237,7 @@ import {UTC2Local} from '../../utils/time'
 				this.editor.create()
 			},
 			zan() {
-				if(!this.hasZan) {
+				if(!this.record.zan) {
 					operateBlog({
 						blogId: this.id,
 						ukeyid: this.$store.getters.keyid,
@@ -236,7 +245,7 @@ import {UTC2Local} from '../../utils/time'
 					}).then(res=> {
 						if(res.data.success) {
 							this.blog.zan += 1
-							this.hasZan = true
+							this.record.zan = true
 						}
 					}).catch(err=> {
 						console.error(err)
@@ -246,7 +255,7 @@ import {UTC2Local} from '../../utils/time'
 				}
 			},
 			cai() {
-				if(!this.hasCai) {
+				if(!this.record.cai) {
 					operateBlog({
 						blogId: this.id,
 						ukeyid: this.$store.getters.keyid,
@@ -254,7 +263,7 @@ import {UTC2Local} from '../../utils/time'
 					}).then(res=> {
 						if(res.data.success) {
 							this.blog.cai += 1
-							this.hasCai = true
+							this.record.cai = true
 						}
 					}).catch(err=> {
 						console.error(err)
@@ -262,6 +271,27 @@ import {UTC2Local} from '../../utils/time'
 				} else {
 					this.$message('你已经踩过了哦，请手下留情吧~')
 				}
+			},
+			getBlogRecord() {
+				getBlogRecord({
+					blogId: this.id || '',
+					ukeyid: this.$store.getters.keyid || ''
+				}).then(res=> {
+					if(res.data.success) {
+						this.recordList = res.data.data
+						res.data.data.forEach(el => {
+							switch(el.type) {
+								case 'zan': this.record.zan = true; break
+								case 'cai': this.record.cai = true; break
+								case 'views': this.record.views = true; break
+								case 'share': this.record.share = true; break
+								case 'collect': this.record.collect = true; break
+							}
+						})
+					}					
+				}).catch(err=> {
+					console.error(err)
+				})
 			},
 			openFullScreen() {
         this.loading = this.$loading({

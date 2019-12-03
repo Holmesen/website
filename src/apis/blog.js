@@ -70,3 +70,14 @@ export function getBlogComment(query) {
     params: query
   })
 }
+
+export function getBlogRecord(query) {
+  return service({
+    url: '/blog/get-record',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: query
+  })
+}
