@@ -29,6 +29,7 @@
 
 <script>
 import {getBlogList} from '../../apis/blog.js'
+import {UTC2Local} from '../../utils/time'
 	export default {
 		name: 'blog',
 		data() {
@@ -50,7 +51,6 @@ import {getBlogList} from '../../apis/blog.js'
 				background: 'rgba(0, 0, 0, 0.7)'
 			})
 			getBlogList().then(res=> {
-				debugger
 				if(res.data.success) {
 					if(res.data.data && res.data.data.length>0) {
 						var ele = document.createElement("div")
@@ -63,6 +63,8 @@ import {getBlogList} from '../../apis/blog.js'
 								src = imgs[0].src
 							}
 							el.imgSrc = src
+							el.date = UTC2Local(el.date)
+							el.updateTime = UTC2Local(el.updateTime)
 						})
 						this.blogList = res.data.data
 					}

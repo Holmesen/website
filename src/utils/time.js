@@ -29,3 +29,10 @@ function check(i){
   //}
   //return i;
 }
+
+export function UTC2Local(utc){
+  if(!!utc) {
+    return new Date(utc).toLocaleString() || utc
+  }
+  return ""
+}

@@ -34,8 +34,8 @@
 				<div class="comment-top">
 					<div class="comment-top-left">
 						<img :src="item.avatar" :alt="item.name">
-						<span>{{item.name}}</span>
-						<span>{{item.date}}</span>
+						<span class="commenter">{{item.name}}</span>
+						<span class="commentDate">{{item.date}}</span>
 					</div>
 					<div class="comment-top-right">
 						<span><i class="iconfont iconappreciate" style="font-size:18px;margin-right:5px;"></i>{{item.zan}}</span>
@@ -53,6 +53,7 @@
 <script>
 import E from 'wangeditor'
 import {getBlogList2Id, operateBlog, commentBlog, getBlogComment} from '../../apis/blog.js'
+import {UTC2Local} from '../../utils/time'
 	export default {
 		name: 'blogInfo',
 		data() {
@@ -93,6 +94,8 @@ import {getBlogList2Id, operateBlog, commentBlog, getBlogComment} from '../../ap
 				this.comment.bkeyid = this.id = this.$route.params.id
 				this.openFullScreen()
 				getBlogList2Id(this.id).then(res=> {
+					res.data.data[0].date = UTC2Local(res.data.data[0].date)
+					res.data.data[0].updateTime = UTC2Local(res.data.data[0].updateTime)
 					this.blog = res.data.data[0]
 					this.getComment()
 					operateBlog({
@@ -148,6 +151,9 @@ import {getBlogList2Id, operateBlog, commentBlog, getBlogComment} from '../../ap
 				getBlogComment({blogId: this.id}).then(res=> {
 					if(res.data.success) {
 						if(res.data.data && res.data.data.length>0) {
+							res.data.data.forEach(el => {
+								el.date = UTC2Local(el.date)
+							})
 							this.commentList = res.data.data
 						}
 					} else {
@@ -364,5 +370,11 @@ import {getBlogList2Id, operateBlog, commentBlog, getBlogComment} from '../../ap
 }
 .comment-bottom>span img{
 	height: 20px; width: 20px; margin: auto 3px;
+}
+.commenter{
+	font-size: 17px; font-weight: bold; margin-right: 30px; color: steelblue;
+}
+.commentDate{
+	color: #ababab;
 }
 </style>
