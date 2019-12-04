@@ -81,3 +81,25 @@ export function getBlogRecord(query) {
     params: query
   })
 }
+
+export function getCommentRecord(query) {
+  return service({
+    url: '/blog/comment-record',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: query
+  })
+}
+
+export function operateBlogComment(formData) {
+  return service({
+    url: '/blog/operate-comment',
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    data: formData
+  })
+}

@@ -13,7 +13,7 @@
 		<div id="blog-content" class="content-div" v-html="blog.content"></div>
 		<!-- 操作 -->
 		<div class="operate">
-			<span><i class="iconfont iconfavor" style="font-size:27px;"></i>收藏</span>
+			<span><i class="iconfont iconfavor" style="font-size:27px;" @click="collect" :style="{color: record.collect?'red':'#2c3e50'}"></i>{{record.collect?"已收藏":"收藏"}}</span>
 			<span><i class="iconfont iconappreciate" style="font-size:27px;" @click="zan" :style="{color: record.zan?'red':'#2c3e50'}"></i>{{blog.zan}}</span>
 			<span><i class="iconfont iconoppose_light" style="font-size:27px;" @click="cai" :style="{color: record.cai?'red':'#2c3e50'}"></i>{{blog.cai}}</span>
 			<span><i class="iconfont iconshare" style="font-size:27px;"></i>分享</span>
@@ -38,8 +38,8 @@
 						<span class="commentDate">{{item.date}}</span>
 					</div>
 					<div class="comment-top-right">
-						<span><i class="iconfont iconappreciate" style="font-size:18px;margin-right:5px;"></i>{{item.zan}}</span>
-						<span><i class="iconfont iconoppose_light" style="font-size:18px;margin-right:5px;"></i>{{item.cai}}</span>
+						<span><i class="iconfont iconappreciate" style="font-size:18px;margin-right:5px;" :style="{color: item.hasZan?'red':'#2c3e50'}"   @click="operateBlogComment(index, 'zan')"></i>{{item.zan}}</span>
+						<span><i class="iconfont iconoppose_light" style="font-size:18px;margin-right:5px;" :style="{color: item.hasCai?'red':'#2c3e50'}" @click="operateBlogComment(index, 'cai')"></i>{{item.cai}}</span>
 					</div>
 				</div>
 				<div class="comment-bottom">
@@ -52,7 +52,7 @@
 
 <script>
 import E from 'wangeditor'
-import {getBlogList2Id, operateBlog, commentBlog, getBlogComment, getBlogRecord} from '../../apis/blog.js'
+import {getBlogList2Id, operateBlog, commentBlog, getBlogComment, getBlogRecord, operateBlogComment, getCommentRecord} from '../../apis/blog.js'
 import {UTC2Local} from '../../utils/time'
 	export default {
 		name: 'blogInfo',
@@ -85,6 +85,7 @@ import {UTC2Local} from '../../utils/time'
 				},
 				commentList: [], // 评论列表
 				recordList: [], // 操作信息列表
+				commentRecordList: [], // 评论操作信息列表
 				record: {
 					zan: false,
 					cai: false,
@@ -139,6 +140,7 @@ import {UTC2Local} from '../../utils/time'
 							message: res.data.message || '博客评论成功',
 							type: 'success'
 						})
+						this.editor.txt.html('')
 						this.getComment()
 					} else {
 						this.$notify({
@@ -162,8 +164,11 @@ import {UTC2Local} from '../../utils/time'
 						if(res.data.data && res.data.data.length>0) {
 							res.data.data.forEach(el => {
 								el.date = UTC2Local(el.date)
+								el.hasZan = false
+								el.hasCai = false
 							})
 							this.commentList = res.data.data
+							this.getCommentRecord() // 获取用户对评论的操作列表
 						}
 					} else {
 						this.$notify({
@@ -246,6 +251,7 @@ import {UTC2Local} from '../../utils/time'
 						if(res.data.success) {
 							this.blog.zan += 1
 							this.record.zan = true
+							this.getBlogRecord()
 						}
 					}).catch(err=> {
 						console.error(err)
@@ -264,6 +270,7 @@ import {UTC2Local} from '../../utils/time'
 						if(res.data.success) {
 							this.blog.cai += 1
 							this.record.cai = true
+							this.getBlogRecord()
 						}
 					}).catch(err=> {
 						console.error(err)
@@ -271,6 +278,68 @@ import {UTC2Local} from '../../utils/time'
 				} else {
 					this.$message('你已经踩过了哦，请手下留情吧~')
 				}
+			},
+			collect() {
+				if(this.record.collect) {
+					// 取消收藏
+					operateBlog({
+						blogId: this.id,
+						ukeyid: this.$store.getters.keyid,
+						type: 'collect',
+						tag: '0'
+					}).then(res=> {
+						if(res.data.success) {
+							this.blog.collect -= 1
+							this.record.collect = false
+							this.getBlogRecord()
+						}
+					}).catch(err=> {
+						console.error(err)
+					})
+				} else {
+					// 收藏
+					operateBlog({
+						blogId: this.id,
+						ukeyid: this.$store.getters.keyid,
+						type: 'collect'
+					}).then(res=> {
+						if(res.data.success) {
+							this.blog.collect += 1
+							this.record.collect = true
+							this.getBlogRecord()
+						}
+					}).catch(err=> {
+						console.error(err)
+					})
+				}
+			},
+			operateBlogComment(index, type) {
+				if(type==="zan" && this.commentList[index].hasZan) {
+					this.$message('你已经赞过了哦~')
+					return
+				}
+				if(type==="cai" && this.commentList[index].hasCai) {
+					this.$message('你已经踩过了哦，请手下留情吧~')
+					return
+				}
+				operateBlogComment({
+					ukeyid: this.$store.getters.keyid,
+					ckeyid: this.commentList[index].keyid,
+					type: type
+				}).then(res=> {
+					if(res.data.success) {
+						// if(type==="zan") {
+						// 	this.commentList[index].hasZan = true
+						// }
+						// if(type==="cai") {
+						// 	this.commentList[index].hasCai = true
+						// }
+						this.getComment()
+						this.getCommentRecord()
+					}
+				}).catch(err=> {
+					console.error(err)
+				})
 			},
 			getBlogRecord() {
 				getBlogRecord({
@@ -289,6 +358,34 @@ import {UTC2Local} from '../../utils/time'
 							}
 						})
 					}					
+				}).catch(err=> {
+					console.error(err)
+				})
+			},
+			getCommentRecord() {
+				getCommentRecord({
+					bkeyid: this.id || '',
+					ukeyid: this.$store.getters.keyid || ''
+				}).then(res=> {
+					if(res.data.success) {
+						if(res.data.data && res.data.data.length>0) {
+							res.data.data.forEach((el, index) => {
+								this.commentList.find((item, idx)=>{
+									if(el.tkeyid===item.keyid) {
+										if(el.type==="zan") {
+											this.commentList[idx].hasZan = true
+										}
+										if(el.type==="cai") {
+											this.commentList[idx].hasCai = true
+										}
+										return true
+									} else {
+										return false
+									}
+								})
+							})
+						}
+					}
 				}).catch(err=> {
 					console.error(err)
 				})
