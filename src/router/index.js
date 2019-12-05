@@ -21,6 +21,8 @@ export default new Router({
     { path: '/life/writeLife', name: 'writeLife', component: _import('life/writeLife') },
 
 
-    { path: '/test', name: 'test', component: _import('test')}
+    { path: '/test', name: 'test', component: _import('test')},
+
+    { path: '*', name: '404', component: _import('errorPage/404') }
   ]
 })

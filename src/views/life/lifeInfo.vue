@@ -124,7 +124,7 @@ import {UTC2Local} from '../../utils/time'
 				}).finally(()=>{this.loading.close()})
 				this.initEditor()
 			} else {
-				this.$router.push({path: '/blank'})
+				this.$router.push({path: '/404'})
 			}
 		},
 		methods: {
