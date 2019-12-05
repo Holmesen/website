@@ -17,7 +17,7 @@ export default new Router({
     { path: '/blog/blogInfo/:id', name: 'blogInfo', component: _import('blog/blogInfo') },
     { path: '/blog/writeBlog', name: 'writeBlog', component: _import('blog/writeBlog') },
     { path: '/life', name: 'life', component: _import('life/index') },
-    { path: '/life/lifeInfo', name: 'lifeInfo', component: _import('life/lifeInfo') },
+    { path: '/life/lifeInfo/:id', name: 'lifeInfo', component: _import('life/lifeInfo') },
     { path: '/life/writeLife', name: 'writeLife', component: _import('life/writeLife') },
 
 

@@ -19,22 +19,19 @@
 			</div>
 		</div>
 		<div class="chronicles">
-			<div class="chronicle-div" v-for="(item,index) in [1,2,3,4,5,6,7,8,9]" :key="index">
+			<div class="chronicle-div" v-for="(item,index) in lifeList" :key="index">
 				<figure class="imghvr-flip-vert">
-					<img src="../../assets/images/images/instagram-w.jpg">
+					<img :src="item.imgSrc">
 					<figcaption>
 						<div class="back-div">
-							<span class="back-title">某某生活纪事</span>
+							<span class="back-title" :title="item.title">{{item.title}}</span>
 							<span class="back-date">
-								<i class="el-icon-date"></i>2019/07/25
+								<i class="el-icon-date"></i>{{item.updateTime || item.date}}
 							</span>
-							<span class="back-intro">
-								于千万人之中遇见你所要遇见的人，于千万年之中，时间的无涯的荒野里，没有早一步，也没有晚一步，
-								刚巧赶上了，那也没有别的话可说，惟有轻轻地问一声：“噢，你也在这里吗？”
-							</span>
+							<span class="back-intro">{{item.description}}</span>
 						</div>
 					</figcaption>
-					<router-link to='/life/lifeInfo'></router-link>
+					<router-link :to="'/life/lifeInfo/'+item.keyid"></router-link>
 				</figure>
 			</div>
 		</div>
@@ -42,6 +39,8 @@
 </template>
 
 <script>
+import {getLifeList} from '../../apis/life.js'
+import {UTC2Local} from '../../utils/time'
 	export default {
 		name: 'life',
 		data() {
@@ -58,8 +57,56 @@
 					{label: '2019年6月', tag: '2019/06', type: 'info'},
 					{label: '2019年7月', tag: '2019/07', type: 'info'}
 				],
-				category: ''
+				category: '',
+				lifeList: [],
+				loading: null
 			}
+		},
+		methods: {
+			toInfo(lifeId) {
+				this.$router.push({path: '/life/lifeInfo/'+lifeId})
+			}
+		},
+		mounted() {
+			this.loading = this.$loading({
+				lock: true,
+				text: 'Loading...',
+				spinner: 'el-icon-loading',
+				background: 'rgba(0, 0, 0, 0.7)'
+			})
+			getLifeList().then(res=> {
+				if(res.data.success) {
+					if(res.data.data && res.data.data.length>0) {
+						var ele = document.createElement("div")
+						res.data.data.forEach(el => {
+							ele.innerHTML = el.content
+							el.description = (ele.innerText).substring(0, 100)
+							let imgs = ele.getElementsByTagName("img")
+							let src = '../../../static/images/noImage.jpg'
+							if(imgs && imgs.length>0) {
+								src = imgs[0].src
+							}
+							el.imgSrc = src
+							el.date = UTC2Local(el.date)
+							el.updateTime = UTC2Local(el.updateTime)
+						})
+						this.lifeList = res.data.data
+					}
+				} else {
+					this.$notify({
+						title: '获取记事',
+						message: res.data.message || '记事获取失败',
+						type: 'error'
+					})
+				}
+			}).catch(err=> {
+				console.error(err)
+				this.$notify({
+					title: '获取记事',
+					message: '记事获取失败',
+					type: 'error'
+				})
+			}).finally(()=>{this.loading.close()})
 		}
 	}
 </script>
@@ -86,7 +133,13 @@
 	height: auto; width: 75%;	flex-flow: row;	flex-wrap: wrap;	margin: 20px auto;
 }
 .chronicle-div{
-	width: 30%;	height: auto;	margin: 20px auto;
+	width: 30%;	height: 320px;	margin: 1.6%;
+}
+.imghvr-flip-vert{
+	width: 100%; height: 100%;
+}
+.imghvr-flip-vert>img{
+	width: 100%; height: 100%;
 }
 .category{
 	flex-flow: row; justify-content: space-between; margin: 30px auto 0px auto;
@@ -105,17 +158,19 @@
 	width: 80%; height: 90%; margin: auto;
 }
 .back-title{
-	font-size: 16px; line-height: 30px; width: 100%; height: 30px;
+	font-size: 16px; line-height: 30px; width: 100%; height: auto;
+	display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1;
+	overflow: hidden; text-overflow: ellipsis; word-break: break-all;
 }
 .back-date{
-	font-size: 15px; line-height: 30px; width: fit-content; height: 30px; margin: 10px auto; flex-flow: row;
+	font-size: 15px; line-height: 30px; width: fit-content; height: 30px; margin: 6px auto; flex-flow: row;
 }
 .back-date>i{
 	height: 16px; width: 16px; margin: auto 13px auto auto;
 }
 .back-intro{
-	font-size: 16px; line-height: 35px; height: calc(100% - 80px); width: 100%; margin: auto; text-indent: 2em;
-	display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+	font-size: 16px; line-height: 30px; height: calc(100% - 80px); width: 100%; margin: auto; text-indent: 2em;
+	display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5;
 	overflow: hidden; text-overflow: ellipsis; word-break: break-all;
 }
 </style>

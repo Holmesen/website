@@ -99,8 +99,8 @@ import {UTC2Local} from '../../utils/time'
 		},
 		mounted() {
 			this.comment.ukeyid = this.$store.getters.keyid
-			if(true || this.$route.params.id) {
-				this.comment.lkeyid = this.id = this.$route.params.id = 'HQGyaKwiR82TMrS7'
+			if(this.$route.params.id) {
+				this.comment.lkeyid = this.id = this.$route.params.id
 				this.openFullScreen()
 				getLifeList2Id(this.id).then(res=> {
 					res.data.data[0].date = UTC2Local(res.data.data[0].date)
