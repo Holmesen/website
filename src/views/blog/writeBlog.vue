@@ -78,7 +78,7 @@ import {releaseBlog} from '../../apis/blog'
       this.editor = new E(this.$refs.editor)
       this.editor.customConfig = {
         // 上传图片到服务器的地址
-        uploadImgServer: process.env.BASE_API + '/upload/blog-image',
+        uploadImgServer: process.env.BASE_API + '/upload/blog-image?keyid=' + this.$store.getters.keyid,
         // 限制一次最多上传 1 张图片
         uploadImgMaxLength: 1,
         // 修改字段名
