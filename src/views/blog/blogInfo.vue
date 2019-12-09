@@ -103,6 +103,10 @@ import {UTC2Local} from '../../utils/time'
 				this.comment.bkeyid = this.id = this.$route.params.id
 				this.openFullScreen()
 				getBlogList2Id(this.id).then(res=> {
+					if(res.data.data.length === 0) {
+						this.$router.push({path: '/404'})
+						return
+					}
 					res.data.data[0].date = UTC2Local(res.data.data[0].date)
 					res.data.data[0].updateTime = UTC2Local(res.data.data[0].updateTime)
 					this.blog = res.data.data[0]
