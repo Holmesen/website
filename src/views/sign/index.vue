@@ -11,8 +11,8 @@
         </span>
       </el-tooltip>
       <span style="font-size:20px; line-height:1.5em; text-align:center; font-weight:bold;">登录</span>
-      <span><el-input placeholder="请输入用户名" v-model="name" clearable></el-input></span>
-      <span><el-input placeholder="请输入密码" v-model="pwd" show-password></el-input></span>
+      <span><el-input placeholder="请输入用户名" v-model="name" clearable @keyup.enter.native="signin"></el-input></span>
+      <span><el-input placeholder="请输入密码" v-model="pwd" show-password @keyup.enter.native="signin"></el-input></span>
       <span><el-button type="primary" style="width:100%;" @click="signin">登录</el-button></span>
       <span class="signup">没有账号？<u style="font-weight:bold; color:#409EFF; cursor:pointer;" @click="issignin = false">注册一个</u></span>
     </div>
