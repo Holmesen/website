@@ -23,12 +23,12 @@
           </el-col>
         </el-row>
         <el-row v-show="!isFold">
-          <el-col :span="24"><span>相册描述：</span><el-input v-model="active.desc" :disabled="!isEdit" type="textarea" :rows="2" maxlength="100" show-word-limit></el-input></el-col>
+          <el-col :span="24"><span>相册描述：</span><el-input style="margin-right:20px;" v-model="active.desc" :disabled="!isEdit" type="textarea" :rows="2" maxlength="100" show-word-limit></el-input></el-col>
         </el-row>
         <el-row v-show="!isFold">
           <el-col :span="24">
             <el-button round style="margin-left:auto;" type="warning" @click="edit(false)">{{isEdit?"取消修改":"修改信息"}}</el-button>
-            <el-button round type="success" v-show="isEdit" @click="edit(true)">确认修改</el-button>
+            <el-button round style="margin-right:20px;" type="success" v-show="isEdit" @click="edit(true)">确认修改</el-button>
             <el-button round style="margin-right:20px;" type="primary" v-show="!isEdit" @click="release">上传相册</el-button>
           </el-col>
         </el-row>
@@ -36,7 +36,7 @@
         <div class="fold" @click="isFold=!isFold"><i v-show="!isFold" class="el-icon-caret-top"></i><i v-show="isFold" class="el-icon-caret-bottom"></i></div>
       </div>
       <div class="picture" :class="{'has-fold2':isFold}">
-        <el-upload multiple :limit="5" :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+        <el-upload multiple :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
           <i class="el-icon-plus"></i>
         </el-upload>
         <el-dialog :visible.sync="dialogVisible">
@@ -48,6 +48,8 @@
 </template>
 
 <script>
+import {releaseAlbum} from '../../apis/album.js'
+import {NowTime} from '../../utils/time'
 export default {
   name: 'name',
   data() {
@@ -58,7 +60,7 @@ export default {
       albumList: [
         {
           name: '', // 相册名
-          user: '', // 创建者
+          user: this.$store.getters.name, // 创建者
           date: '', // 创建日期
           tags: [], // 标签
           isPublic: false, // 是否公开
@@ -68,7 +70,7 @@ export default {
       ],
       active: {
         name: '', // 相册名
-        user: '', // 创建者
+        user: this.$store.getters.name, // 创建者
         date: '', // 创建日期
         tags: [], // 标签
         isPublic: false, // 是否公开
@@ -99,13 +101,13 @@ export default {
     },
     pictureUploadSuccess(response, file, fileList) {
       if(response.success) {
-        this.active.list.push(response.data)
+        this.active.list.push(JSON.stringify(response.data))
       }
     },
     addAlbum() {
       this.albumList.push({
         name: '',
-        user: '',
+        user: this.$store.getters.name,
         date: '',
         tags: [],
         isPublic: false,
@@ -152,7 +154,31 @@ export default {
       this.isEdit = !this.isEdit
     },
     release() {
-      // this.openFullScreen()
+      this.openFullScreen()
+      releaseAlbum(
+        Object.assign(this.active, {ukeyid: this.$store.getters.keyid || '', isPublic:this.active.isPublic?'Y':'N'})
+      ).then(res=> {
+        if(res.data.success) {
+          this.$notify({
+            title: '上传相册',
+            message: res.data.message || '相册上传成功',
+            type: 'success'
+          })
+        } else {
+          this.$notify({
+            title: '上传相册',
+            message: res.data.message || '相册上传失败',
+            type: 'error'
+          })
+        }
+      }).catch(err=> {
+        this.$notify({
+          title: '上传相册',
+          message: '相册上传失败',
+          type: 'error'
+        })
+        console.error(err)
+      }).finally(()=> { this.loading.close() })
     },
     openFullScreen() {
       this.loading = this.$loading({
@@ -164,7 +190,12 @@ export default {
     }
   },
   mounted () {
-    this.active = !!this.albumList ? this.albumList[0] : {name: '', user: '', date: '', tags: [], isPublic: false, desc: '', list: []}
+    this.active = !!this.albumList ? this.albumList[0] : {name: this.$store.getters.name, user: '', date: '', tags: [], isPublic: false, desc: '', list: []}
+    if(!this.active.date) {
+      setInterval(() => {
+        this.active.date = this.dateTime = NowTime()
+      }, 500)
+    }
   }
 }
 </script>
