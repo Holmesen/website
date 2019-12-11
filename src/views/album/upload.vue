@@ -23,7 +23,7 @@
           </el-col>
         </el-row>
         <el-row v-show="!isFold">
-          <el-col :span="24"><span>相册描述：</span><el-input style="margin-right:20px;" v-model="active.desc" :disabled="!isEdit" type="textarea" :rows="2" maxlength="100" show-word-limit></el-input></el-col>
+          <el-col :span="24"><span>相册描述：</span><el-input style="margin-right:20px;" v-model="active.description" :disabled="!isEdit" type="textarea" :rows="2" maxlength="100" show-word-limit></el-input></el-col>
         </el-row>
         <el-row v-show="!isFold">
           <el-col :span="24">
@@ -36,7 +36,7 @@
         <div class="fold" @click="isFold=!isFold"><i v-show="!isFold" class="el-icon-caret-top"></i><i v-show="isFold" class="el-icon-caret-bottom"></i></div>
       </div>
       <div class="picture" :class="{'has-fold2':isFold}">
-        <el-upload multiple :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+        <el-upload :file-list="active.photos" multiple :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
           <i class="el-icon-plus"></i>
         </el-upload>
         <el-dialog :visible.sync="dialogVisible">
@@ -64,8 +64,8 @@ export default {
           date: '', // 创建日期
           tags: [], // 标签
           isPublic: false, // 是否公开
-          desc: '', // 描述
-          list: [] // 相册列表
+          description: '', // 描述
+          photos: [] // 相册列表
         }
       ],
       active: {
@@ -74,8 +74,8 @@ export default {
         date: '', // 创建日期
         tags: [], // 标签
         isPublic: false, // 是否公开
-        desc: '', // 描述
-        list: [] // 相册列表
+        description: '', // 描述
+        photos: [] // 相册列表
       },
       temp: null,
       activeIdx: 0,
@@ -111,8 +111,8 @@ export default {
         date: '',
         tags: [],
         isPublic: false,
-        desc: '',
-        list: []
+        description: '',
+        photos: []
       })
       this.activeIdx = this.albumList.length-1
       this.active = this.albumList[this.albumList.length-1]
@@ -183,14 +183,36 @@ export default {
     openFullScreen() {
       this.loading = this.$loading({
         lock: true,
-        text: '记事发布ing...',
+        text: 'Loading...',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
     }
   },
   mounted () {
-    this.active = !!this.albumList ? this.albumList[0] : {name: this.$store.getters.name, user: '', date: '', tags: [], isPublic: false, desc: '', list: []}
+    this.openFullScreen()
+    getAlbumList({}).then(res=> {
+      if(res.data.success) {
+        if(res.data.data && res.data.data.length>0) {
+          this.albumList = res.data.data
+          this.active = !!this.albumList ? this.albumList[0] : {name: this.$store.getters.name, user: '', date: '', tags: [], isPublic: false, description: '', photos: []}
+        }
+      } else {
+        this.$notify({
+          title: '获取相册',
+          message: res.data.message || '相册获取失败',
+          type: 'error'
+        })
+      }
+    }).catch(err=> {
+      console.error(err)
+      this.$notify({
+        title: '获取相册',
+        message: '相册获取失败',
+        type: 'error'
+      })
+    }).finally(()=>{this.loading.close()})
+    this.active = !!this.albumList ? this.albumList[0] : {name: this.$store.getters.name, user: '', date: '', tags: [], isPublic: false, description: '', photos: []}
     if(!this.active.date) {
       setInterval(() => {
         this.active.date = this.dateTime = NowTime()

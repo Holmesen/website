@@ -13,3 +13,14 @@ export function releaseAlbum(formData) {
     }
   })
 }
+
+export function getAlbumList(query=null) {
+  return service({
+    url: '/album/get-list',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: query
+  })
+}

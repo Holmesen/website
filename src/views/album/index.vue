@@ -17,6 +17,7 @@
 
 <script>
 import vueWaterfallEasy from "vue-waterfall-easy"
+import {getAlbumList} from '../../apis/album'
 	export default {
 		name: 'album',
 		components: {
@@ -49,15 +50,46 @@ import vueWaterfallEasy from "vue-waterfall-easy"
 					{src:'https://a.desktopprassets.com/wallpapers/b17f5222fd82d95194706d07813330efb64b6faf/preview_TTU8BQ4YpnCnqFCRrv01-EG6XuJ-nUMmSZxgJWEkw2g.jpg',href:'/album/albumInfo'},
 					{src:'https://a.desktopprassets.com/wallpapers/e705c7dbbe92b37ed9b3b5e9d6c11dbd5f1f0393/preview_7l9qazf6qou31.jpg',href:'/album/albumInfo'},
 					{src:'https://a.desktopprassets.com/wallpapers/7e43e5e78ce1e3d679a15b85c6e8c95673ef8f5c/preview_ely276idt7s31.jpg',href:'/album/albumInfo'}
-				]
+				],
+				albumList: [],
+				loading: null
 			}
 		},
 		methods: {
 			getData() {
 				return
 			},
+			openFullScreen() {
+        this.loading = this.$loading({
+          lock: true,
+          text: 'Loading...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        })
+      }
 		},
 		mounted() {
+			// this.openFullScreen()
+			// getAlbumList({}).then(res=> {
+			// 	if(res.data.success) {
+			// 		if(res.data.data && res.data.data.length>0) {
+			// 			this.albumList = res.data.data
+			// 		}
+			// 	} else {
+			// 		this.$notify({
+			// 			title: '获取相册',
+			// 			message: res.data.message || '相册获取失败',
+			// 			type: 'error'
+			// 		})
+			// 	}
+			// }).catch(err=> {
+			// 	console.error(err)
+			// 	this.$notify({
+			// 		title: '获取相册',
+			// 		message: '相册获取失败',
+			// 		type: 'error'
+			// 	})
+			// }).finally(()=>{this.loading.close()})
 		}
 	}
 </script>
