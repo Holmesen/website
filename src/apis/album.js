@@ -14,6 +14,20 @@ export function releaseAlbum(formData) {
   })
 }
 
+export function updateAlbum(formData) {
+  return service({
+    url: '/album/update',
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: {},
+    data: {
+      albumData: JSON.stringify(formData)
+    }
+  })
+}
+
 export function getAlbumList(query=null) {
   return service({
     url: '/album/get-list',

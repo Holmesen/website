@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import {releaseAlbum, getAlbumList} from '../../apis/album.js'
+import {releaseAlbum, updateAlbum, getAlbumList} from '../../apis/album.js'
 import {NowTime} from '../../utils/time'
 export default {
   name: 'name',
@@ -90,35 +90,14 @@ export default {
   },
   methods: {
     handleRemove(file, fileList) {
-      // console.log(file, fileList)
-      let list = []
-      fileList.forEach(el => {
-        list.push(el.response.data)
-      })
-      this.active.photos = JSON.parse(JSON.stringify(list))
+      this.active.photos = fileList
     },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogVisible = true
     },
     pictureUploadSuccess(response, file, fileList) {
-      console.log("response: ", response)
-      console.log("file: ", file)
-      console.log("fileList: ", fileList)
-      debugger
-      // if((file.status === "success") && file.response && file.response.data && file.response.data.name && file.response.data.url) {
-      //   this.active.photos.push({name: file.response.data.name, url: file.response.data.url, uid: file.uid, status: file.status})
-      // }
-      // this.tempList = []
-      // fileList.forEach(el => {
-      //   // debugger
-      //   // if(el.response && el.response.data && el.response.data.name && el.response.data.url && (el.status === "success")) {
-      //   //   this.active.photos.push({name: el.response.data.name, url: el.response.data.url, uid:el.uid, status: el.status})
-      //   // }
-      // })
-      // this.active.photos = list
-      // this.active.photos.concat(this.tempList)
-      console.log("photos: ", this.active.photos)
+      this.active.photos = fileList
     },
     submitUpload() {
       this.$refs.upload.submit()
@@ -176,36 +155,64 @@ export default {
     },
     release() {
       this.openFullScreen()
-      // this.active.photos = this.active.photos.concat(this.tempList)
       let list = []
       this.active.photos.forEach(el => {
-        list.push(JSON.stringify({name: el.name, url: el.url}))
+        list.push(JSON.stringify({name: (el.response?el.response.data.name:el.name), url: (el.response?el.response.data.url:el.url)}))
       })
-      // this.active.photos = list
-      releaseAlbum(
-        Object.assign(this.active, {ukeyid: this.$store.getters.keyid || '', isPublic:this.active.isPublic?'Y':'N', photos: list})
-      ).then(res=> {
+      let active = JSON.parse(JSON.stringify(this.active))
+      updateAlbum({
+        keyid: this.active.keyid,
+        name: this.active.name,
+        isPublic: this.active.isPublic?'Y':'N',
+        photos: list,
+        tags: this.active.tags
+      }).then(res=> {
         if(res.data.success) {
           this.$notify({
-            title: '上传相册',
-            message: res.data.message || '相册上传成功',
+            title: '更新相册',
+            message: res.data.message || '相册更新成功',
             type: 'success'
           })
+          // this.active = res.data.data
         } else {
           this.$notify({
-            title: '上传相册',
-            message: res.data.message || '相册上传失败',
+            title: '更新相册',
+            message: res.data.message || '相册更新失败',
             type: 'error'
           })
         }
       }).catch(err=> {
         this.$notify({
-          title: '上传相册',
-          message: '相册上传失败',
+          title: '更新相册',
+          message: '相册更新失败',
           type: 'error'
         })
         console.error(err)
       }).finally(()=> { this.loading.close() })
+      // releaseAlbum(
+      //   Object.assign(active, {ukeyid: this.$store.getters.keyid || '', isPublic:this.active.isPublic?'Y':'N', photos: list})
+      // ).then(res=> {
+      //   if(res.data.success) {
+      //     this.$notify({
+      //       title: '上传相册',
+      //       message: res.data.message || '相册上传成功',
+      //       type: 'success'
+      //     })
+      //   } else {
+      //     this.$notify({
+      //       title: '上传相册',
+      //       message: res.data.message || '相册上传失败',
+      //       type: 'error'
+      //     })
+      //   }
+      // }).catch(err=> {
+      //   this.$notify({
+      //     title: '上传相册',
+      //     message: '相册上传失败',
+      //     type: 'error'
+      //   })
+      //   console.error(err)
+      // }).finally(()=> { this.loading.close() })
     },
     openFullScreen() {
       this.loading = this.$loading({
@@ -221,6 +228,9 @@ export default {
     getAlbumList({}).then(res=> {
       if(res.data.success) {
         if(res.data.data && res.data.data.length>0) {
+          res.data.data.forEach((el,idx) => {
+            res.data.data[idx]["isPublic"] = (el.isPublic==='Y'?true:false)
+          })
           this.albumList = res.data.data
           this.active = !!this.albumList ? this.albumList[0] : {name: this.$store.getters.name, user: '', date: '', tags: [], isPublic: false, description: '', photos: []}
         }
