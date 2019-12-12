@@ -28,6 +28,7 @@
         <el-row v-show="!isFold">
           <el-col :span="24">
             <el-button round style="margin-left:auto;" type="warning" @click="edit(false)">{{isEdit?"取消修改":"修改信息"}}</el-button>
+            <el-button round style="margin-right:20px;" type="primary" @click="submitUpload">上传图片</el-button>
             <el-button round style="margin-right:20px;" type="success" v-show="isEdit" @click="edit(true)">确认修改</el-button>
             <el-button round style="margin-right:20px;" type="primary" v-show="!isEdit" @click="release">上传相册</el-button>
           </el-col>
@@ -36,7 +37,7 @@
         <div class="fold" @click="isFold=!isFold"><i v-show="!isFold" class="el-icon-caret-top"></i><i v-show="isFold" class="el-icon-caret-bottom"></i></div>
       </div>
       <div class="picture" :class="{'has-fold2':isFold}">
-        <el-upload :file-list="active.photos" multiple :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+        <el-upload ref="upload" :file-list="active.photos" :auto-upload="false" multiple :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
           <i class="el-icon-plus"></i>
         </el-upload>
         <el-dialog :visible.sync="dialogVisible">
@@ -48,7 +49,7 @@
 </template>
 
 <script>
-import {releaseAlbum} from '../../apis/album.js'
+import {releaseAlbum, getAlbumList} from '../../apis/album.js'
 import {NowTime} from '../../utils/time'
 export default {
   name: 'name',
@@ -78,6 +79,7 @@ export default {
         photos: [] // 相册列表
       },
       temp: null,
+      tempList: [],
       activeIdx: 0,
       isFold: false, // 相册信息是否收起
       isEdit: false, // 是否修改相册信息
@@ -93,16 +95,33 @@ export default {
       fileList.forEach(el => {
         list.push(el.response.data)
       })
-      this.active.list = JSON.parse(JSON.stringify(list))
+      this.active.photos = JSON.parse(JSON.stringify(list))
     },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogVisible = true
     },
     pictureUploadSuccess(response, file, fileList) {
-      if(response.success) {
-        this.active.list.push(JSON.stringify(response.data))
-      }
+      console.log("response: ", response)
+      console.log("file: ", file)
+      console.log("fileList: ", fileList)
+      debugger
+      // if((file.status === "success") && file.response && file.response.data && file.response.data.name && file.response.data.url) {
+      //   this.active.photos.push({name: file.response.data.name, url: file.response.data.url, uid: file.uid, status: file.status})
+      // }
+      // this.tempList = []
+      // fileList.forEach(el => {
+      //   // debugger
+      //   // if(el.response && el.response.data && el.response.data.name && el.response.data.url && (el.status === "success")) {
+      //   //   this.active.photos.push({name: el.response.data.name, url: el.response.data.url, uid:el.uid, status: el.status})
+      //   // }
+      // })
+      // this.active.photos = list
+      // this.active.photos.concat(this.tempList)
+      console.log("photos: ", this.active.photos)
+    },
+    submitUpload() {
+      this.$refs.upload.submit()
     },
     addAlbum() {
       this.albumList.push({
@@ -118,6 +137,8 @@ export default {
       this.active = this.albumList[this.albumList.length-1]
     },
     chooseAlbum(index) {
+      if(this.activeIdx === index) return
+      this.albumList[this.activeIdx] = this.active
       this.activeIdx = index
       this.active = this.albumList[index]
     },
@@ -155,8 +176,14 @@ export default {
     },
     release() {
       this.openFullScreen()
+      // this.active.photos = this.active.photos.concat(this.tempList)
+      let list = []
+      this.active.photos.forEach(el => {
+        list.push(JSON.stringify({name: el.name, url: el.url}))
+      })
+      // this.active.photos = list
       releaseAlbum(
-        Object.assign(this.active, {ukeyid: this.$store.getters.keyid || '', isPublic:this.active.isPublic?'Y':'N'})
+        Object.assign(this.active, {ukeyid: this.$store.getters.keyid || '', isPublic:this.active.isPublic?'Y':'N', photos: list})
       ).then(res=> {
         if(res.data.success) {
           this.$notify({
@@ -218,6 +245,14 @@ export default {
         this.active.date = this.dateTime = NowTime()
       }, 500)
     }
+  },
+  watch: {
+    // 'tempList': {
+    //   handler(newV, oldV) {
+    //     this.active.photos = newV
+    //   },
+    //   deep: true
+    // }
   }
 }
 </script>
