@@ -298,7 +298,7 @@ import {releaseLife} from '../../apis/life'
 }
 #add-article{
   display: flex; flex-flow: row; align-content: center; font-size: 18px; line-height: 2em; padding: 7px 13px; 
-  font-weight: bold; cursor: pointer;
+  font-weight: bold; cursor: pointer; border-bottom: solid 1px gray;
 }
 #article-list{
   width: 100%; height: auto; display: flex; flex-flow: column; align-content: center;

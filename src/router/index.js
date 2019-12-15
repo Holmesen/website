@@ -12,7 +12,7 @@ export default new Router({
     { path: '/sign', name: 'sign', component: _import('sign/index') },
     { path: '/personal', name: 'personal', component: _import('personal/index') },
     { path: '/album', name: 'album', component: _import('album/index') },
-    { path: '/album/albumInfo', name: 'albumInfo', component: _import('album/albumInfo') },
+    { path: '/album/albumInfo/:id', name: 'albumInfo', component: _import('album/albumInfo') },
     { path: '/album/upload', name: 'uploadAlbum', component: _import('album/upload') },
     { path: '/blog', name: 'blog', component: _import('blog/index') },
     { path: '/blog/blogInfo/:id', name: 'blogInfo', component: _import('blog/blogInfo') },

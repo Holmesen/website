@@ -27,15 +27,15 @@
         </el-row>
         <el-row >
           <el-col :span="24">
-            <el-button round style="margin:auto 10px auto auto;" icon="el-icon-edit" type="warning" @click="edit(false)">{{isEdit?"取消修改":"修改信息"}}</el-button>
+            <el-button round style="margin:auto 10px auto auto;" icon="el-icon-edit" type="warning" @click="edit(false)" :loading="isloading">{{isEdit?"取消修改":"修改信息"}}</el-button>
             <!-- <el-button round style="margin:auto 10px;" type="primary" @click="submitUpload">上传图片</el-button> -->
-            <el-button round style="margin:auto 10px;" type="primary" icon="el-icon-upload2" v-show="!isEdit" @click="release">更新相册</el-button>
-            <el-button round style="margin:auto 20px auto 10px;" type="success" icon="el-icon-document-checked" v-show="isEdit" @click="edit(true)">确认修改</el-button>
-            <el-button round style="margin:auto 20px auto 10px;" type="danger" icon="el-icon-delete" v-show="!isEdit" @click="deleteAlbum">删除相册</el-button>
+            <el-button round style="margin:auto 10px;" type="primary" icon="el-icon-upload2" v-show="!isEdit" @click="release" :loading="isloading">更新相册</el-button>
+            <el-button round style="margin:auto 20px auto 10px;" type="success" icon="el-icon-document-checked" v-show="isEdit" @click="edit(true)" :loading="isloading">确认修改</el-button>
+            <el-button round style="margin:auto 20px auto 10px;" type="danger" icon="el-icon-delete" v-show="!isEdit" @click="deleteAlbum(activeIdx)" :loading="isloading" :disabled="active.isNew">删除相册</el-button>
           </el-col>
         </el-row>
-        <span v-show="isFold" style="font-size:15px; color:#cccccc; text-align:center; width:fit-content; position:absolute; left:calc(50% - 60px);">查看更多相册信息</span>
-        <div class="fold" @click="isFold=!isFold"><i v-show="!isFold" class="el-icon-caret-top"></i><i v-show="isFold" class="el-icon-caret-bottom"></i></div>
+        <!-- <span v-show="isFold" style="font-size:15px; color:#cccccc; text-align:center; width:fit-content; position:absolute; left:calc(50% - 60px);">查看更多相册信息</span> -->
+        <div class="fold" @click="isFold=!isFold" :title="isFold?'展开相册信息':'收起相册信息'"><i v-show="!isFold" class="el-icon-caret-top"></i><i v-show="isFold" class="el-icon-caret-bottom"></i></div>
       </div>
       <div class="picture" :class="{'has-fold2':isFold}">
         <el-upload ref="upload" :file-list="active.photos" :auto-upload="true" multiple :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :before-remove="beforeRemove" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import {releaseAlbum, updateAlbum, getAlbumList} from '../../apis/album.js'
+import {releaseAlbum, updateAlbum, getAlbumList, deleteAlbum} from '../../apis/album.js'
 import {NowTime, UTC2Local} from '../../utils/time'
 export default {
   name: 'name',
@@ -67,7 +67,8 @@ export default {
           tags: [], // 标签
           isPublic: false, // 是否公开
           description: '', // 描述
-          photos: [] // 相册列表
+          photos: [], // 相册列表
+          isNew: true // 是否是新相册
         }
       ],
       active: {
@@ -76,7 +77,8 @@ export default {
         tags: [], // 标签
         isPublic: false, // 是否公开
         description: '', // 描述
-        photos: [] // 相册列表
+        photos: [], // 相册列表
+        isNew: true // 是否是新相册
       },
       temp: null,
       tempList: [],
@@ -85,7 +87,8 @@ export default {
       isEdit: false, // 是否修改相册信息
       inputVisible: false,
       inputValue: '',
-      loading: null
+      loading: null,
+      isloading: false
     };
   },
   methods: {
@@ -109,7 +112,7 @@ export default {
     addAlbum() {
       this.albumList.push({
         name: '',
-        date: '',
+        date: NowTime(),
         tags: [],
         isPublic: false,
         description: '',
@@ -131,22 +134,45 @@ export default {
       this.albumList.splice(index, 1)
     },
     // 删除相册
-    deleteAlbum() {
+    deleteAlbum(idx) {
       this.$confirm('将永久删除该相册, 是否继续?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
-        })
+        this.isloading = true
+        deleteAlbum(this.albumList[idx]["keyid"]).then(res=> {
+          if(res.data.success) {
+            this.activeIdx = 0
+            this.active = this.albumList[0]
+            this.albumList.splice(idx, 1)
+            this.$notify({
+              title: '删除相册',
+              message: res.data.message || '相册删除成功',
+              type: 'success'
+            })
+            this.getAlbumList()
+          } else {
+            this.$notify({
+              title: '删除相册',
+              message: res.data.message || '相册删除失败',
+              type: 'error'
+            })
+          }
+        }).catch(err=> {
+          this.$notify({
+            title: '删除相册',
+            message: '相册删除失败',
+            type: 'error'
+          })
+          console.error(err)
+        }).finally(()=> { this.isloading = false })
       }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消删除'
         })
-      })
+      }).finally(()=>{this.isloading = false})
     },
     handleClose(tag) {
       this.active.tags.splice(this.active.tags.indexOf(tag), 1)
@@ -255,6 +281,7 @@ export default {
               res.data.data[idx]["date"] = UTC2Local(res.data.data[idx]["date"])
             })
             this.albumList = res.data.data
+            this.activeIdx = 0
             this.active = (!!this.albumList && this.albumList.length>0) ? this.albumList[0] : {name: this.$store.getters.name, user: '', date: '', tags: [], isPublic: false, description: '', photos: []}
           }
         } else {
@@ -313,7 +340,7 @@ export default {
 }
 #add-article{
   display: flex; flex-flow: row; align-content: center; font-size: 18px; line-height: 2em; padding: 7px 13px; 
-  font-weight: bold; cursor: pointer;
+  font-weight: bold; cursor: pointer; border-bottom: solid 1px gray;
 }
 #article-list{
   width: 100%; height: auto; display: flex; flex-flow: column; align-content: center;
@@ -338,7 +365,7 @@ export default {
 }
 .album-info{
   width: calc(100% - 40px); height: 30%; border-bottom: solid 1px #bbbbbb; padding: 20px;
-  display: flex; flex-flow: column; min-height: 200px; position: relative;
+  display: flex; flex-flow: column; min-height: 210px; position: relative;
 }
 .album-info /deep/ .el-row{
   display: flex; flex-flow: row; margin: 5px 0px;

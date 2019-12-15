@@ -29,6 +29,12 @@ export default {
     myfooter
   },
   mounted() {
+    if (!Array.prototype.derangedArray) {
+      Array.prototype.derangedArray = function() {
+        for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
+        return this
+      }
+    }
     // var top=jq(document).scrollTop();
     //   jq(document).on('scroll.unable',function (e){
     //   jq(document).scrollTop(top);

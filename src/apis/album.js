@@ -38,3 +38,23 @@ export function getAlbumList(query=null) {
     params: query
   })
 }
+
+export function deleteAlbum(query) {
+  return service({
+    url: '/album/delete/'+query,
+    method: 'delete',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    }
+  })
+}
+
+export function getPhotos() {
+  return service({
+    url: '/album/photos',
+    method: 'get',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    }
+  })
+}
