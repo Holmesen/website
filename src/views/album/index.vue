@@ -8,7 +8,7 @@
 				</div>
 			</div>
 			<div style="height:calc(100vh - 90px);">
-				<vue-waterfall-easy srcKey="url" :imgsArr="albumList" @scrollReachBottom="getData"></vue-waterfall-easy>
+				<vue-waterfall-easy ref="waterfall" srcKey="url" :imgsArr="albumList" @scrollReachBottom="getData"></vue-waterfall-easy>
 			</div>
 		</div>
 		
@@ -31,7 +31,7 @@ import {getAlbumList, getPhotos} from '../../apis/album'
 		},
 		methods: {
 			getData() {
-				return
+				this.$refs.waterfall.waterfallOver()
 			},
 			openFullScreen() {
         this.loading = this.$loading({

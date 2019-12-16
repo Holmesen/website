@@ -498,6 +498,9 @@ import {UTC2Local} from '../../utils/time'
 .comment-bottom>span p{
 	display: block; flex-flow: row;
 }
+.comment-bottom /deep/ img {
+	max-width: 200px !important; max-height: 200px !important;
+}
 .comment-bottom>span img{
 	height: 20px; width: 20px; margin: auto 3px;
 }
