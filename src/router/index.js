@@ -16,7 +16,7 @@ export default new Router({
     { path: '/album/upload', name: 'uploadAlbum', component: _import('album/upload') },
     { path: '/blog', name: 'blog', component: _import('blog/index') },
     { path: '/blog/blogInfo/:id', name: 'blogInfo', component: _import('blog/blogInfo') },
-    { path: '/blog/writeBlog', name: 'writeBlog', component: _import('blog/writeBlog') },
+    { path: '/blog/writeBlog/:id', name: 'writeBlog', component: _import('blog/writeBlog') },
     { path: '/life', name: 'life', component: _import('life/index') },
     { path: '/life/lifeInfo/:id', name: 'lifeInfo', component: _import('life/lifeInfo') },
     { path: '/life/writeLife', name: 'writeLife', component: _import('life/writeLife') },

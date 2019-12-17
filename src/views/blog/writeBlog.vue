@@ -10,10 +10,10 @@
       <span><el-button type="primary" round @click="releaseBlog">发表文章</el-button></span>
       <span>
         <span><i class="el-icon-collection-tag"></i><b>标题：</b></span>
-        <el-input placeholder="请输入标题" clearable v-model="active.title" maxlength="50" show-word-limit></el-input>
+        <el-input placeholder="请输入标题" v-model="active.title" maxlength="50" show-word-limit></el-input>
       </span>
       <span><span><i class="el-icon-user-solid"></i><b>作者：</b></span>&emsp;{{active.user}}</span>
-      <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{dateTime}}</span>
+      <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{active.date}}</span>
       <span>
         <span><i class="el-icon-location"></i><b>地点：</b></span>
         <el-input placeholder="选填" clearable v-model="active.place" maxlength="30" show-word-limit></el-input>
@@ -44,8 +44,8 @@
 
 <script>
 import E from 'wangeditor'
-import {NowTime} from '../../utils/time'
-import {releaseBlog} from '../../apis/blog'
+import {NowTime, UTC2Local} from '../../utils/time'
+import {releaseBlog, getBlogList} from '../../apis/blog'
   export default {
     name: 'writeBlog',
     components: {
@@ -56,25 +56,19 @@ import {releaseBlog} from '../../apis/blog'
         inputVisible: false,
         inputValue: '',
         dateTime: '',
-        active: {
-          title: '',
-          user: this.$store.getters.name || '',
-          ukeyid: this.$store.getters.keyid,
-          date: '',
-          place: '',
-          weather: '',
-          category: [],
-          content: ''
-        },
+        active: {},
         activeIdx: 0,
         articleList: [],
         loading: null
 			}
 		},
 		mounted() {
-      setInterval(() => {
-        this.active.date = this.dateTime = NowTime()
-      }, 500)
+      if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+      this.openFullScreen()
+
+      // setInterval(() => {
+      //   this.active.date = this.dateTime = NowTime()
+      // }, 500)
       this.editor = new E(this.$refs.editor)
       this.editor.customConfig = {
         // 上传图片到服务器的地址
@@ -128,19 +122,26 @@ import {releaseBlog} from '../../apis/blog'
         }
       }
       this.editor.create()
-      // editor.txt.html('<p>用 JS 设置的内容</p>')
-
-      // 初始给文章列表加一篇默认的空白文章
-      this.articleList.push({
-        title: '',
-        user: this.$store.getters.name || '',
-        ukeyid: this.$store.getters.keyid,
-        date: this.dateTime,
-        place: '',
-        weather: '',
-        category: [],
-        content: ''
-      })
+      getBlogList({ukeyid: this.$route.params.id}).then(res=> {
+        if(res.data.success) {
+          res.data.data.forEach((el,idx) => {
+            res.data.data[idx]["date"] = UTC2Local(el.date)
+            res.data.data[idx]["updateTime"] = UTC2Local(el.updateTime)
+          })
+          this.articleList = res.data.data
+          if(this.articleList.length===0) {
+            this.addArticle()
+          } else {
+            this.active = this.articleList[0]
+          }
+          this.editor.txt.html(this.active.content)
+        } else {
+          this.$message.error(res.data.message || "获取博客列表失败")
+        }
+      }).catch(err=> {
+        this.$message.error("获取博客列表失败")
+        console.error(err)
+      }).finally(()=>{this.loading.close()})
 		},
 		methods: {
 
@@ -168,11 +169,12 @@ import {releaseBlog} from '../../apis/blog'
           title: '',
           user: this.$store.getters.name || '',
           ukeyid: this.$store.getters.keyid,
-          date: this.dateTime,
+          date: NowTime(),
           place: '',
           weather: '',
           category: [],
-          content: ''
+          content: '',
+          isNew: true
         })
         this.activeIdx = this.articleList.length-1
         this.active = this.articleList[this.articleList.length-1]

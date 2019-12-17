@@ -10,7 +10,7 @@
       <span><el-button type="primary" round @click="releaseLife">发表文章</el-button></span>
       <span>
         <span><i class="el-icon-collection-tag"></i><b>标题：</b></span>
-        <el-input placeholder="请输入标题" clearable v-model="active.title" maxlength="50" show-word-limit></el-input>
+        <el-input placeholder="请输入标题" v-model="active.title" maxlength="50" show-word-limit></el-input>
       </span>
       <span><span><i class="el-icon-user-solid"></i><b>作者：</b></span>&emsp;{{active.user}}</span>
       <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{dateTime}}</span>
