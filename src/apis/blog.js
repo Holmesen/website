@@ -14,6 +14,30 @@ export function releaseBlog(formData) {
   })
 }
 
+export function updateBlog(formData) {
+  return service({
+    url: '/blog/update',
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: {},
+    data: {
+      blogData: JSON.stringify(formData)
+    }
+  })
+}
+
+export function deleteBlog(query) {
+  return service({
+    url: '/blog/delete/'+query,
+    method: 'delete',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    }
+  })
+}
+
 export function getBlogList2Id(query) {
   return service({
     url: '/blog/get-idlist',

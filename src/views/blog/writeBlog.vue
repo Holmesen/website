@@ -7,7 +7,7 @@
       </span>
     </div>
     <div class="info">
-      <span><el-button type="primary" round @click="releaseBlog">发表文章</el-button></span>
+      <span><el-button type="primary" round @click="releaseBlog">{{active.isNew?"发表文章":"更新文章"}}</el-button></span>
       <span>
         <span><i class="el-icon-collection-tag"></i><b>标题：</b></span>
         <el-input placeholder="请输入标题" v-model="active.title" maxlength="50" show-word-limit></el-input>
@@ -45,7 +45,7 @@
 <script>
 import E from 'wangeditor'
 import {NowTime, UTC2Local} from '../../utils/time'
-import {releaseBlog, getBlogList} from '../../apis/blog'
+import {releaseBlog, getBlogList, updateBlog, deleteBlog} from '../../apis/blog'
   export default {
     name: 'writeBlog',
     components: {
@@ -59,7 +59,8 @@ import {releaseBlog, getBlogList} from '../../apis/blog'
         active: {},
         activeIdx: 0,
         articleList: [],
-        loading: null
+        loading: null,
+        isloading: false
 			}
 		},
 		mounted() {
@@ -122,26 +123,7 @@ import {releaseBlog, getBlogList} from '../../apis/blog'
         }
       }
       this.editor.create()
-      getBlogList({ukeyid: this.$route.params.id}).then(res=> {
-        if(res.data.success) {
-          res.data.data.forEach((el,idx) => {
-            res.data.data[idx]["date"] = UTC2Local(el.date)
-            res.data.data[idx]["updateTime"] = UTC2Local(el.updateTime)
-          })
-          this.articleList = res.data.data
-          if(this.articleList.length===0) {
-            this.addArticle()
-          } else {
-            this.active = this.articleList[0]
-          }
-          this.editor.txt.html(this.active.content)
-        } else {
-          this.$message.error(res.data.message || "获取博客列表失败")
-        }
-      }).catch(err=> {
-        this.$message.error("获取博客列表失败")
-        console.error(err)
-      }).finally(()=>{this.loading.close()})
+      this.getBlogList()
 		},
 		methods: {
 
@@ -164,6 +146,29 @@ import {releaseBlog, getBlogList} from '../../apis/blog'
         this.inputVisible = false
         this.inputValue = ''
       },
+      getBlogList() {
+        if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+        getBlogList({ukeyid: this.$route.params.id}).then(res=> {
+          if(res.data.success) {
+            res.data.data.forEach((el,idx) => {
+              res.data.data[idx]["date"] = UTC2Local(el.date)
+              res.data.data[idx]["updateTime"] = UTC2Local(el.updateTime)
+            })
+            this.articleList = res.data.data
+            if(this.articleList.length===0) {
+              this.addArticle()
+            } else {
+              this.active = this.articleList[0]
+            }
+            this.editor.txt.html(this.active.content)
+          } else {
+            this.$message.error(res.data.message || "获取博客列表失败")
+          }
+        }).catch(err=> {
+          this.$message.error("获取博客列表失败")
+          console.error(err)
+        }).finally(()=>{this.loading.close()})
+      },
       addArticle() {
         this.articleList.push({
           title: '',
@@ -183,10 +188,62 @@ import {releaseBlog, getBlogList} from '../../apis/blog'
         this.activeIdx = index
         this.active = this.articleList[index]
       },
-      removeArticle(index) {
-        this.activeIdx = 0
-        this.active = this.articleList[0]
-        this.articleList.splice(index, 1)
+      removeArticle(idx) {
+        if(this.articleList[idx]["isNew"]) {
+          this.$confirm('该博客还未上传, 是否删除?', '警告', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.activeIdx = 0
+            this.active = this.articleList[0]
+            this.articleList.splice(idx, 1)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            })
+          }).finally(()=>{this.isloading = false})
+        } else {
+          this.$confirm('将永久删除该博客, 是否继续?', '警告', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.isloading = true
+            deleteBlog(this.articleList[idx]["keyid"]).then(res=> {
+              if(res.data.success) {
+                this.activeIdx = 0
+                this.active = this.articleList[0]
+                this.articleList.splice(idx, 1)
+                this.$notify({
+                  title: '删除博客',
+                  message: res.data.message || '博客删除成功',
+                  type: 'success'
+                })
+                this.getBlogList()
+              } else {
+                this.$notify({
+                  title: '删除博客',
+                  message: res.data.message || '博客删除失败',
+                  type: 'error'
+                })
+              }
+            }).catch(err=> {
+              this.$notify({
+                title: '删除博客',
+                message: '博客删除失败',
+                type: 'error'
+              })
+              console.error(err)
+            }).finally(()=> { this.isloading = false })
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            })
+          }).finally(()=>{this.isloading = false})
+        }
       },
       /**
        * 发布博客
@@ -201,42 +258,65 @@ import {releaseBlog, getBlogList} from '../../apis/blog'
           return
         }
         this.openFullScreen()
-        releaseBlog( this.active, this.$store.getters.token ).then(res=> {
-          if(res.data.success) {
-            // this.$message.success(res.message || '博客发布成功')
-            this.$notify({
-              title: '发布博客',
-              message: res.data.message || '博客发布成功',
-              type: 'success'
-            })
-            this.active = {
-              title: '',
-              user: this.$store.getters.name || '',
-              ukeyid: this.$store.getters.keyid,
-              date: '',
-              place: '',
-              weather: '',
-              category: [],
-              content: ''
+        if(!this.active.isNew) {
+          updateBlog( this.active, this.$store.getters.token ).then(res=> {
+            if(res.data.success) {
+              // this.$message.success(res.message || '博客发布成功')
+              this.$notify({
+                title: '更新博客',
+                message: res.data.message || '博客更新成功',
+                type: 'success'
+              })
+              this.activeIdx = 0
+              this.getBlogList()
+            } else {
+              // this.$message(res.message || '博客发布失败')
+              this.$notify({
+                title: '更新博客',
+                message: res.data.message || '博客更新失败',
+                type: 'error'
+              })
             }
-            this.editor.txt.html('')
-          } else {
-            // this.$message(res.message || '博客发布失败')
+          }).catch(err=> {
+            // this.$message.error('博客发布失败')
             this.$notify({
-              title: '发布博客',
-              message: res.data.message || '博客发布失败',
+              title: '更新博客',
+              message: '博客更新失败',
               type: 'error'
             })
-          }
-        }).catch(err=> {
-          // this.$message.error('博客发布失败')
-          this.$notify({
-            title: '发布博客',
-            message: '博客发布失败',
-            type: 'error'
-          })
-          console.error(err)
-        }).finally(()=> { this.loading.close() })
+            console.error(err)
+          }).finally(()=> { this.loading.close() })
+        } else {
+          releaseBlog( this.active, this.$store.getters.token ).then(res=> {
+            if(res.data.success) {
+              // this.$message.success(res.message || '博客发布成功')
+              this.$notify({
+                title: '发布博客',
+                message: res.data.message || '博客发布成功',
+                type: 'success'
+              })
+              this.active.isNew = false
+              this.activeIdx = 0
+              this.getBlogList()
+            } else {
+              // this.$message(res.message || '博客发布失败')
+              this.$notify({
+                title: '发布博客',
+                message: res.data.message || '博客发布失败',
+                type: 'error'
+              })
+            }
+          }).catch(err=> {
+            // this.$message.error('博客发布失败')
+            this.$notify({
+              title: '发布博客',
+              message: '博客发布失败',
+              type: 'error'
+            })
+            console.error(err)
+          }).finally(()=> { this.loading.close() })
+        }
+        
       },
       openFullScreen() {
         this.loading = this.$loading({
@@ -256,6 +336,7 @@ import {releaseBlog, getBlogList} from '../../apis/blog'
         deep: true
       },
       'activeIdx': function(newV, oldV) {
+        this.active = this.articleList[newV]
         this.editor.txt.html(this.active.content)
       }
     }
