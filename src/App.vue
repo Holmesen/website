@@ -22,6 +22,7 @@
 import jq from 'jquery'
 import myheader from './components/header/index'
 import myfooter from './components/footer/index'
+import Cookies from 'js-cookie'
 export default {
   name: 'App',
   components: {
@@ -33,6 +34,24 @@ export default {
       Array.prototype.derangedArray = function() {
         for(var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
         return this
+      }
+    }
+    if(!Cookies.get("Holmesen-Token")) {
+      if(this.$store.getters.token) {
+        this.$store.dispatch('FedLogOut')
+        this.$confirm('登录已过期, 是否重新登录?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          if(this.$route.path !== "/sign")
+            this.$router.push({path: "/sign"})
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '您已取消重新登录，将影响您的使用体验！'
+          })
+        })
       }
     }
     // var top=jq(document).scrollTop();

@@ -7,13 +7,13 @@
       </span>
     </div>
     <div class="info">
-      <span><el-button type="primary" round @click="releaseLife">发表文章</el-button></span>
+      <span><el-button type="primary" round @click="releaseLife">{{active.isNew?"发表文章":"更新文章"}}</el-button></span>
       <span>
         <span><i class="el-icon-collection-tag"></i><b>标题：</b></span>
         <el-input placeholder="请输入标题" v-model="active.title" maxlength="50" show-word-limit></el-input>
       </span>
       <span><span><i class="el-icon-user-solid"></i><b>作者：</b></span>&emsp;{{active.user}}</span>
-      <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{dateTime}}</span>
+      <span><span><i class="el-icon-date"></i><b>日期：</b></span>&emsp;{{active.date}}</span>
       <span>
         <span><i class="el-icon-location"></i><b>地点：</b></span>
         <el-input placeholder="选填" clearable v-model="active.place" maxlength="30" show-word-limit></el-input>
@@ -44,7 +44,7 @@
 
 <script>
 import E from 'wangeditor'
-import {NowTime} from '../../utils/time'
+import {NowTime, UTC2Local} from '../../utils/time'
 import {releaseLife, getLifeList, updateLife, deleteLife} from '../../apis/life'
   export default {
     name: 'writeLife',
@@ -178,7 +178,7 @@ import {releaseLife, getLifeList, updateLife, deleteLife} from '../../apis/life'
           title: '',
           user: this.$store.getters.name || '',
           ukeyid: this.$store.getters.keyid,
-          date: this.dateTime,
+          date: NowTime(),
           place: '',
           weather: '',
           category: [],
