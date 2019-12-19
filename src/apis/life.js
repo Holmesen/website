@@ -14,6 +14,30 @@ export function releaseLife(formData) {
   })
 }
 
+export function updateLife(formData) {
+  return service({
+    url: '/life/update',
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: {},
+    data: {
+      lifeData: JSON.stringify(formData)
+    }
+  })
+}
+
+export function deleteLife(query) {
+  return service({
+    url: '/life/delete/'+query,
+    method: 'delete',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    }
+  })
+}
+
 export function getLifeList2Id(query) {
   return service({
     url: '/life/get-idlist',

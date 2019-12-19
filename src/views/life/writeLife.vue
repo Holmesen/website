@@ -45,7 +45,7 @@
 <script>
 import E from 'wangeditor'
 import {NowTime} from '../../utils/time'
-import {releaseLife} from '../../apis/life'
+import {releaseLife, getLifeList, updateLife, deleteLife} from '../../apis/life'
   export default {
     name: 'writeLife',
     components: {
@@ -72,9 +72,8 @@ import {releaseLife} from '../../apis/life'
 			}
 		},
 		mounted() {
-      setInterval(() => {
-        this.active.date = this.dateTime = NowTime()
-      }, 500)
+      if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+      this.openFullScreen()
       this.editor = new E(this.$refs.editor)
       this.editor.customConfig = {
         // 上传图片到服务器的地址
@@ -128,19 +127,7 @@ import {releaseLife} from '../../apis/life'
         }
       }
       this.editor.create()
-      // editor.txt.html('<p>用 JS 设置的内容</p>')
-
-      // 初始给文章列表加一篇默认的空白文章
-      this.articleList.push({
-        title: '',
-        user: this.$store.getters.name || '',
-        ukeyid: this.$store.getters.keyid,
-        date: this.dateTime,
-        place: '',
-        weather: '',
-        category: [],
-        content: ''
-      })
+      this.getLifeList()
 		},
 		methods: {
 
@@ -163,6 +150,29 @@ import {releaseLife} from '../../apis/life'
         this.inputVisible = false
         this.inputValue = ''
       },
+      getLifeList() {
+        if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+        getLifeList({ukeyid: this.$route.params.id}).then(res=> {
+          if(res.data.success) {
+            res.data.data.forEach((el,idx) => {
+              res.data.data[idx]["date"] = UTC2Local(el.date)
+              res.data.data[idx]["updateTime"] = UTC2Local(el.updateTime)
+            })
+            this.articleList = res.data.data
+            if(this.articleList.length===0) {
+              this.addArticle()
+            } else {
+              this.active = this.articleList[0]
+            }
+            this.editor.txt.html(this.active.content)
+          } else {
+            this.$message.error(res.data.message || "获取记事列表失败")
+          }
+        }).catch(err=> {
+          this.$message.error("获取记事列表失败")
+          console.error(err)
+        }).finally(()=>{this.loading.close()})
+      },
       addArticle() {
         this.articleList.push({
           title: '',
@@ -172,7 +182,8 @@ import {releaseLife} from '../../apis/life'
           place: '',
           weather: '',
           category: [],
-          content: ''
+          content: '',
+          isNew: true
         })
         this.activeIdx = this.articleList.length-1
         this.active = this.articleList[this.articleList.length-1]
@@ -181,10 +192,62 @@ import {releaseLife} from '../../apis/life'
         this.activeIdx = index
         this.active = this.articleList[index]
       },
-      removeArticle(index) {
-        this.activeIdx = 0
-        this.active = this.articleList[0]
-        this.articleList.splice(index, 1)
+      removeArticle(idx) {
+        if(this.articleList[idx]["isNew"]) {
+          this.$confirm('该记事还未上传, 是否删除?', '警告', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.activeIdx = 0
+            this.active = this.articleList[0]
+            this.articleList.splice(idx, 1)
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            })
+          }).finally(()=>{this.isloading = false})
+        } else {
+          this.$confirm('将永久删除该记事, 是否继续?', '警告', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.isloading = true
+            deleteLife(this.articleList[idx]["keyid"]).then(res=> {
+              if(res.data.success) {
+                this.activeIdx = 0
+                this.active = this.articleList[0]
+                this.articleList.splice(idx, 1)
+                this.$notify({
+                  title: '删除记事',
+                  message: res.data.message || '记事删除成功',
+                  type: 'success'
+                })
+                this.getLifeList()
+              } else {
+                this.$notify({
+                  title: '删除记事',
+                  message: res.data.message || '记事删除失败',
+                  type: 'error'
+                })
+              }
+            }).catch(err=> {
+              this.$notify({
+                title: '删除记事',
+                message: '记事删除失败',
+                type: 'error'
+              })
+              console.error(err)
+            }).finally(()=> { this.isloading = false })
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            })
+          }).finally(()=>{this.isloading = false})
+        }
       },
       /**
        * 发布记事
@@ -199,42 +262,62 @@ import {releaseLife} from '../../apis/life'
           return
         }
         this.openFullScreen()
-        releaseLife( this.active, this.$store.getters.token ).then(res=> {
-          if(res.data.success) {
-            // this.$message.success(res.message || '记事发布成功')
-            this.$notify({
-              title: '发布记事',
-              message: res.data.message || '记事发布成功',
-              type: 'success'
-            })
-            this.active = {
-              title: '',
-              user: this.$store.getters.name || '',
-              ukeyid: this.$store.getters.keyid,
-              date: '',
-              place: '',
-              weather: '',
-              category: [],
-              content: ''
+        if(!this.active.isNew) {
+          updateLife( this.active, this.$store.getters.token ).then(res=> {
+            if(res.data.success) {
+              this.$notify({
+                title: '更新记事',
+                message: res.data.message || '记事更新成功',
+                type: 'success'
+              })
+              this.activeIdx = 0
+              this.getLifeList()
+            } else {
+              this.$notify({
+                title: '更新记事',
+                message: res.data.message || '记事更新失败',
+                type: 'error'
+              })
             }
-            this.editor.txt.html('')
-          } else {
-            // this.$message(res.message || '记事发布失败')
+          }).catch(err=> {
             this.$notify({
-              title: '发布记事',
-              message: res.data.message || '记事发布失败',
+              title: '更新记事',
+              message: '记事更新失败',
               type: 'error'
             })
-          }
-        }).catch(err=> {
-          // this.$message.error('记事发布失败')
-          this.$notify({
-            title: '发布记事',
-            message: '记事发布失败',
-            type: 'error'
-          })
-          console.error(err)
-        }).finally(()=> { this.loading.close() })
+            console.error(err)
+          }).finally(()=> { this.loading.close() })
+        } else {
+          releaseLife( this.active, this.$store.getters.token ).then(res=> {
+            if(res.data.success) {
+              // this.$message.success(res.message || '记事发布成功')
+              this.$notify({
+                title: '发布记事',
+                message: res.data.message || '记事发布成功',
+                type: 'success'
+              })
+              this.active.isNew = false
+              this.activeIdx = 0
+              this.getLifeList()
+            } else {
+              // this.$message(res.message || '记事发布失败')
+              this.$notify({
+                title: '发布记事',
+                message: res.data.message || '记事发布失败',
+                type: 'error'
+              })
+            }
+          }).catch(err=> {
+            // this.$message.error('记事发布失败')
+            this.$notify({
+              title: '发布记事',
+              message: '记事发布失败',
+              type: 'error'
+            })
+            console.error(err)
+          }).finally(()=> { this.loading.close() })
+        }
+        
       },
       openFullScreen() {
         this.loading = this.$loading({
@@ -254,6 +337,7 @@ import {releaseLife} from '../../apis/life'
         deep: true
       },
       'activeIdx': function(newV, oldV) {
+        this.active = this.articleList[newV]
         this.editor.txt.html(this.active.content)
       }
     }
