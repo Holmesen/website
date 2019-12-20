@@ -26,7 +26,7 @@
 		<div class="editor-div">
 			<el-divider content-position="left" style="font-size:16px;font-weight:bold;">发表评论</el-divider>
 			<div ref="editor" style="text-align:left"></div>
-			<div class="submit"><el-button type="primary" round @click="Comment" :loading="isloading2">发表评论</el-button></div>
+			<div class="submit"><el-button type="primary" round @click="Comment" :loading="isloading2" :disabled="!isLogin">发表评论</el-button></div>
 		</div>
 		<div class="comment-div">
 			<h4 v-if="commentList.length<=0">暂无评论，快来抢沙发吧~</h4>
@@ -54,6 +54,9 @@
 import E from 'wangeditor'
 import {getLifeList2Id, operateLife, commentLife, getLifeComment, getLifeRecord, operateLifeComment, getCommentRecord} from '../../apis/life.js'
 import {UTC2Local} from '../../utils/time'
+import {isLogin} from '../../utils/auth.js'
+import emoji from '../../assets/js/emoji'
+import emoji2 from '../../assets/js/emoji2'
 	export default {
 		name: 'lifeInfo',
 		data() {
@@ -94,11 +97,13 @@ import {UTC2Local} from '../../utils/time'
 					collect: false
 				},
 				loading: null,
-				isloading2: false
+				isloading2: false,
+				isLogin: false
 			}
 		},
 		mounted() {
-			this.comment.ukeyid = this.$store.getters.keyid
+			this.isLogin = isLogin()
+			this.comment.ukeyid = this.isLogin? this.$store.getters.keyid : ''
 			if(this.$route.params.id) {
 				this.comment.lkeyid = this.id = this.$route.params.id
 				this.openFullScreen()
@@ -134,6 +139,10 @@ import {UTC2Local} from '../../utils/time'
 		methods: {
 			Comment() {
 				if(!this.comment.lkeyid) {
+					return
+				}
+				if(!this.comment.content) {
+					this.$message.error("请填写内容再评论哦~")
 					return
 				}
 				this.isloading2 = true
@@ -241,11 +250,25 @@ import {UTC2Local} from '../../utils/time'
 					// 支持粘贴的事件
 					pasteTextHandle: (content) => { //支持粘贴
 						return content
-					}
+					},
+					emotions: [
+						{ title: "emoji", type: "image", content: emoji },
+						{ title: "icon", type: "image", content: emoji2 }
+					],
+					menus: this.isLogin?['head','bold','fontSize','fontName','italic','underline','strikeThrough','foreColor','backColor','link','list','justify','quote','emoticon','image','table','video','code','undo','redo']:[]
 				}
 				this.editor.create()
+				if(!this.isLogin) {
+					this.editor.txt.html("<p style='text-align:center;'>请先登录后再来评论吧~</p>")
+					// 禁用编辑功能
+					this.editor.$textElem.attr('contenteditable', false)
+				}
 			},
 			zan() {
+				if(!this.isLogin) {
+					this.$message("请先登录后再操作！")
+					return
+				}
 				if(!this.record.zan) {
 					operateLife({
 						lifeId: this.id,
@@ -265,6 +288,10 @@ import {UTC2Local} from '../../utils/time'
 				}
 			},
 			cai() {
+				if(!this.isLogin) {
+					this.$message("请先登录后再操作！")
+					return
+				}
 				if(!this.record.cai) {
 					operateLife({
 						lifeId: this.id,
@@ -284,6 +311,10 @@ import {UTC2Local} from '../../utils/time'
 				}
 			},
 			collect() {
+				if(!this.isLogin) {
+					this.$message("请先登录后再操作！")
+					return
+				}
 				if(this.record.collect) {
 					// 取消收藏
 					operateLife({
@@ -318,6 +349,10 @@ import {UTC2Local} from '../../utils/time'
 				}
 			},
 			operateLifeComment(index, type) {
+				if(!this.isLogin) {
+					this.$message("请先登录后再操作！")
+					return
+				}
 				if(type==="zan" && this.commentList[index].hasZan) {
 					this.$message('你已经赞过了哦~')
 					return
@@ -346,6 +381,9 @@ import {UTC2Local} from '../../utils/time'
 				})
 			},
 			getLifeRecord() {
+				if(!this.isLogin) {
+					return
+				}
 				getLifeRecord({
 					lifeId: this.id || '',
 					ukeyid: this.$store.getters.keyid || ''
@@ -367,6 +405,9 @@ import {UTC2Local} from '../../utils/time'
 				})
 			},
 			getCommentRecord() {
+				if(!this.isLogin) {
+					return
+				}
 				getCommentRecord({
 					lkeyid: this.id || '',
 					ukeyid: this.$store.getters.keyid || ''

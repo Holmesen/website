@@ -46,6 +46,9 @@
 import E from 'wangeditor'
 import {NowTime, UTC2Local} from '../../utils/time'
 import {releaseBlog, getBlogList, updateBlog, deleteBlog} from '../../apis/blog'
+import {isLogin} from '../../utils/auth.js'
+import emoji from '../../assets/js/emoji'
+import emoji2 from '../../assets/js/emoji2'
   export default {
     name: 'writeBlog',
     components: {
@@ -64,7 +67,18 @@ import {releaseBlog, getBlogList, updateBlog, deleteBlog} from '../../apis/blog'
 			}
 		},
 		mounted() {
-      if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+      this.isLogin = isLogin()
+      if(!this.isLogin) {
+        this.$message.error("登录后才能编辑博客哦~")
+        this.$router.push({path: '/sign'})
+        return
+      }
+      if(!this.$route.params.id) { this.$router.push({path: '/blank'}); return }
+      if(this.$route.params.id !== this.$store.getters.keyid) {
+        this.$message.error("您所查看的用户博客列表与您的登录账号不符！")
+        this.$router.push({path: '/blank'})
+        return
+      }
       this.openFullScreen()
 
       // setInterval(() => {
@@ -120,7 +134,11 @@ import {releaseBlog, getBlogList, updateBlog, deleteBlog} from '../../apis/blog'
         // 支持粘贴的事件
         pasteTextHandle: (content) => { //支持粘贴
           return content
-        }
+        },
+        emotions: [
+          { title: "emoji", type: "image", content: emoji },
+          { title: "icon", type: "image", content: emoji2 }
+        ]
       }
       this.editor.create()
       this.getBlogList()
@@ -147,7 +165,7 @@ import {releaseBlog, getBlogList, updateBlog, deleteBlog} from '../../apis/blog'
         this.inputValue = ''
       },
       getBlogList() {
-        if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+        if(!this.$route.params.id || !this.isLogin) { this.$router.push({path: '/blank'}) }
         getBlogList({ukeyid: this.$route.params.id}).then(res=> {
           if(res.data.success) {
             res.data.data.forEach((el,idx) => {

@@ -46,6 +46,9 @@
 import E from 'wangeditor'
 import {NowTime, UTC2Local} from '../../utils/time'
 import {releaseLife, getLifeList, updateLife, deleteLife} from '../../apis/life'
+import {isLogin} from '../../utils/auth.js'
+import emoji from '../../assets/js/emoji'
+import emoji2 from '../../assets/js/emoji2'
   export default {
     name: 'writeLife',
     components: {
@@ -68,11 +71,23 @@ import {releaseLife, getLifeList, updateLife, deleteLife} from '../../apis/life'
         },
         activeIdx: 0,
         articleList: [],
-        loading: null
+        loading: null,
+        isLogin: false
 			}
 		},
 		mounted() {
-      if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+      this.isLogin = isLogin()
+      if(!this.isLogin) {
+        this.$message.error("登录后才能编辑文章哦~")
+        this.$router.push({path: '/sign'})
+        return
+      }
+      if(!this.$route.params.id) { this.$router.push({path: '/blank'}); return }
+      if(this.$route.params.id !== this.$store.getters.keyid) {
+        this.$message.error("您所查看的用户记事列表与您的登录账号不符！")
+        this.$router.push({path: '/blank'})
+        return
+      }
       this.openFullScreen()
       this.editor = new E(this.$refs.editor)
       this.editor.customConfig = {
@@ -124,7 +139,11 @@ import {releaseLife, getLifeList, updateLife, deleteLife} from '../../apis/life'
         // 支持粘贴的事件
         pasteTextHandle: (content) => { //支持粘贴
           return content
-        }
+        },
+        emotions: [
+          { title: "emoji", type: "image", content: emoji },
+          { title: "icon", type: "image", content: emoji2 }
+        ]
       }
       this.editor.create()
       this.getLifeList()
@@ -151,7 +170,7 @@ import {releaseLife, getLifeList, updateLife, deleteLife} from '../../apis/life'
         this.inputValue = ''
       },
       getLifeList() {
-        if(!this.$route.params.id) { this.$router.push({path: '/blank'}) }
+        if(!this.$route.params.id || !this.isLogin) { this.$router.push({path: '/blank'}) }
         getLifeList({ukeyid: this.$route.params.id}).then(res=> {
           if(res.data.success) {
             res.data.data.forEach((el,idx) => {

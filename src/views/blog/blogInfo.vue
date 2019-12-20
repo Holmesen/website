@@ -55,6 +55,8 @@ import E from 'wangeditor'
 import {getBlogList2Id, operateBlog, commentBlog, getBlogComment, getBlogRecord, operateBlogComment, getCommentRecord} from '../../apis/blog.js'
 import {UTC2Local} from '../../utils/time'
 import {isLogin} from '../../utils/auth.js'
+import emoji from '../../assets/js/emoji'
+import emoji2 from '../../assets/js/emoji2'
 	export default {
 		name: 'blogInfo',
 		data() {
@@ -252,6 +254,10 @@ import {isLogin} from '../../utils/auth.js'
 					pasteTextHandle: (content) => { //支持粘贴
 						return content
 					},
+					emotions: [
+						{ title: "emoji", type: "image", content: emoji },
+						{ title: "icon", type: "image", content: emoji2 }
+					],
 					menus: this.isLogin?['head','bold','fontSize','fontName','italic','underline','strikeThrough','foreColor','backColor','link','list','justify','quote','emoticon','image','table','video','code','undo','redo']:[]
 				}
 				this.editor.create()
