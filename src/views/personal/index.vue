@@ -5,13 +5,11 @@
     <div class="top-div top-div-skill" v-if="this.showblock=='skill'"></div>
     <div class="top-div top-div-case" v-if="this.showblock=='case'"></div>
 
+    <!-- 修改信息弹出框 -->
     <el-dialog title="修改个人信息" :visible.sync="isEditInfo" width="30%">
       <el-form :model="infoForm" :rules="rules" ref="infoForm" label-width="60px" class="demo-ruleForm" v-loading="isloading2">
         <el-form-item label="昵称" prop="name">
           <el-input v-model="infoForm.name" placeholder="长度在3~8个字符"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="pwd">
-          <el-input type="password" v-model="infoForm.pwd" autocomplete="off" placeholder="长度在6~10个字符"></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="sex">
           <el-radio-group v-model="infoForm.sex">
@@ -25,9 +23,21 @@
         <el-form-item label="简述" prop="intro">
           <el-input type="textarea" v-model="infoForm.intro"></el-input>
         </el-form-item>
+        <el-row><span style="color:#66B6FF;cursor:pointer;" @click="isEditPwd=true">修改密码</span></el-row>
       </el-form>
-      <el-dialog width="30%" title="内层 Dialog" :visible.sync="innerVisible" append-to-body>
-        <el-input type="password" v-model="infoForm.pwd" autocomplete="off" placeholder="长度在6~10个字符"></el-input>
+      <el-dialog width="30%" title="修改密码" :visible.sync="isEditPwd" append-to-body>
+        <el-form :model="pwd" :rules="rules2" ref="pwdForm" label-width="80px" class="demo-ruleForm">
+          <el-form-item label="原密码" prop="pwdOld">
+            <el-input type="password" v-model="pwd.pwdOld" autocomplete="off" placeholder="长度在6~10个字符"></el-input>
+          </el-form-item>
+          <el-form-item label="新密码" prop="pwdNew">
+            <el-input type="password" v-model="pwd.pwdNew" autocomplete="off" placeholder="长度在6~10个字符"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="isEditPwd = false">取 消</el-button>
+          <el-button type="primary" @click="isEditPwd = false">确 定</el-button>
+        </div>
       </el-dialog>
       <div slot="footer" class="dialog-footer">
         <el-button @click="isEditInfo = false">取 消</el-button>
@@ -43,10 +53,7 @@
         </div>
         <!-- 个人简介 -->
         <div class="intro-div" style="margin-top:0;">
-          <h2>个人简介</h2>
-          <p>
-            一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球
-          </p>
+          <p>一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球</p>
         </div>
       </div>
 
@@ -112,7 +119,8 @@
 </template>
 
 <script>
-import jq from 'jquery'
+import {getUserAssets} from '../../apis/user.js'
+import {isLogin} from '../../utils/auth.js'
 var echarts = require('echarts')
   export default {
     name: 'personal',
@@ -120,6 +128,7 @@ var echarts = require('echarts')
       return {
         showblock: 'intro',
         isEditInfo: false,
+        isEditPwd: false,
         infoForm: {
           avatar: '',
           name: '',
@@ -138,10 +147,42 @@ var echarts = require('echarts')
             { min: 6, max: 10, message: '长度在6~10个字符', trigger: 'blur' }
           ]
         },
-        isloading: false
+        pwd: {
+          pwdOld: '',
+          pwdNew: ''
+        },
+        rules2: {
+          pwdOld: [
+            { required: true, message: '密码不能为空！', trigger: 'blur' },
+            { min: 6, max: 10, message: '长度在6~10个字符', trigger: 'blur' }
+          ],
+          pwdNew: [
+            { required: true, message: '密码不能为空！', trigger: 'blur' },
+            { min: 6, max: 10, message: '长度在6~10个字符', trigger: 'blur' }
+          ]
+        },
+        isloading: false,
+        isloading2: false
       }
     },
-    mounted() {}
+    mounted() {
+      if(isLogin()) {
+        getUserAssets({
+          ukeyid: this.$store.getters.keyid
+        }).then(res=> {
+          if(res.data.success) {
+            if(res.data.message) {
+              this.$message(res.data.message)
+            } else {
+              //
+            }
+          }
+          console.log(res)
+        }).catch(err=> {
+          console.error(err)
+        })
+      }
+    }
   }
 </script>
 
