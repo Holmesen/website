@@ -5,11 +5,41 @@
     <div class="top-div top-div-skill" v-if="this.showblock=='skill'"></div>
     <div class="top-div top-div-case" v-if="this.showblock=='case'"></div>
 
+    <el-dialog title="修改个人信息" :visible.sync="isEditInfo" width="30%">
+      <el-form :model="infoForm" :rules="rules" ref="infoForm" label-width="60px" class="demo-ruleForm" v-loading="isloading2">
+        <el-form-item label="昵称" prop="name">
+          <el-input v-model="infoForm.name" placeholder="长度在3~8个字符"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="pwd">
+          <el-input type="password" v-model="infoForm.pwd" autocomplete="off" placeholder="长度在6~10个字符"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" prop="sex">
+          <el-radio-group v-model="infoForm.sex">
+            <el-radio label="男"></el-radio>
+            <el-radio label="女"></el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="生日" prop="birthday">
+          <el-date-picker value-format="yyyy-MM-dd" type="date" placeholder="选择日期" v-model="infoForm.birthday" style="width: 100%;"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="简述" prop="intro">
+          <el-input type="textarea" v-model="infoForm.intro"></el-input>
+        </el-form-item>
+      </el-form>
+      <el-dialog width="30%" title="内层 Dialog" :visible.sync="innerVisible" append-to-body>
+        <el-input type="password" v-model="infoForm.pwd" autocomplete="off" placeholder="长度在6~10个字符"></el-input>
+      </el-dialog>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="isEditInfo = false">取 消</el-button>
+        <el-button type="primary" @click="isEditInfo = false">确 定</el-button>
+      </div>
+    </el-dialog>
+
     <div class="content-div">
       <div class="block-div">
         <div style="display:flex;flex-flow:column;align-content:center;height:auto;width:auto;margin:-130px auto 0px auto;">
           <img style="height:240px;width:240px;border-radius:50%;margin: 10px auto;" src="../../assets/images/avatar.jpg" alt="">
-          <span style="font-size:35px;font-weight:bold;width:fit-content;height:auto;line-height:2em;margin:10px auto;letter-spacing: 3px;">Holmesen</span>
+          <span style="font-size:35px;font-weight:bold;width:fit-content;height:auto;line-height:2em;margin:10px auto;letter-spacing: 3px; display:flex; padding-left: 34px;">Holmesen<el-button style="margin:auto 10px;" icon="el-icon-edit" size="mini" circle @click="isEditInfo = true"></el-button></span>
         </div>
         <!-- 个人简介 -->
         <div class="intro-div" style="margin-top:0;">
@@ -23,7 +53,7 @@
       <div class="block-div">
         <el-divider>我的博客</el-divider>
         <div class="blog">
-          <el-card shadow="hover" v-for="(item, index) in [1,2,3,4,5,6]" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
+          <el-card shadow="hover" v-for="(item, index) in [1,2,3,4,5]" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
             <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
             <div class="blog-info">
               <span class="blog-title">好吃的汉堡</span>
@@ -60,6 +90,21 @@
             </div>
           </div>
         </div>
+
+        <el-divider>我的收藏</el-divider>
+        <div class="blog">
+          <el-card shadow="hover" v-for="(item, index) in [1,2,3,4,5]" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
+            <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+            <div class="blog-info">
+              <span class="blog-title">好吃的汉堡</span>
+              <span class="blog-brief">一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球</span>
+            </div>
+            <div class="blog-btn">
+              <span class="blog-date">2019-11-11 11:11:11</span>
+              <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;">取消收藏</el-button></span>
+            </div>
+          </el-card>
+        </div>
       </div>
 
     </div>
@@ -73,7 +118,27 @@ var echarts = require('echarts')
     name: 'personal',
     data() {
       return {
-        showblock: 'intro'
+        showblock: 'intro',
+        isEditInfo: false,
+        infoForm: {
+          avatar: '',
+          name: '',
+          pwd: '',
+          sex: '',
+          birthday: null,
+          intro: ''
+        },
+        rules: {
+          name: [
+            { required: true, message: '昵称不可为空！', trigger: 'blur' },
+            { min: 3, max: 8, message: '长度在3~8个字符', trigger: 'blur' }
+          ],
+          pwd: [
+            { required: true, message: '请设置密码', trigger: 'blur' },
+            { min: 6, max: 10, message: '长度在6~10个字符', trigger: 'blur' }
+          ]
+        },
+        isloading: false
       }
     },
     mounted() {}
@@ -141,14 +206,20 @@ var echarts = require('echarts')
   content:'\260E'; font-size: 15px;
 }
 
+.block-div /deep/ .el-divider--horizontal{
+  width: 70%; margin: 30px auto 10px auto;
+}
+.block-div /deep/ .el-divider__text{
+  font-size: 18px; font-weight: bold; color: darkgray;
+}
 .blog, .life{
   display:flex; flex-flow:row; width:70%; margin:auto; height: auto; flex-wrap: wrap;
 }
 .blog-div, .life-div{
-  width: 30%; height: 316px; display: flex; flex-flow: column; margin: 20px 1.5%; cursor: pointer;
+  width: 30%; height: 330px; display: flex; flex-flow: column; margin: 20px 1.5%; cursor: pointer;
 }
 .blog-img, .life-img{
-  width: 100%; height: 80px;
+  width: 100%; height: 94px;
 }
 .blog-img>img, .life-img>img{
   width: 100%; height: 100%;
