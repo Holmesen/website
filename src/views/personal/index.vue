@@ -59,55 +59,58 @@
 
       <div class="block-div">
         <el-divider>我的博客</el-divider>
-        <div class="blog">
-          <el-card shadow="hover" v-for="(item, index) in [1,2,3,4,5]" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
-            <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div class="blog" v-if="data.blog">
+          <el-card shadow="hover" v-for="(item, index) in data.blog" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
+            <img :src="item.imgSrc" class="image">
             <div class="blog-info">
-              <span class="blog-title">好吃的汉堡</span>
-              <span class="blog-brief">一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球</span>
+              <span class="blog-title">{{item.title}}</span>
+              <span class="blog-brief">{{item.description}}</span>
             </div>
             <div class="blog-btn">
-              <span class="blog-date">2019-11-11 11:11:11</span>
+              <span class="blog-date">{{item.dateT}}</span>
               <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;">修改</el-button></span>
             </div>
           </el-card>
         </div>
 
         <el-divider>生活记事</el-divider>
-        <div class="life">
-          <el-card shadow="hover" v-for="(item, index) in [1,2,3,4,5,6]" :key="index" class="life-div" :body-style="{ padding: '0px' }">
-            <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div class="life" v-if="data.life">
+          <el-card shadow="hover" v-for="(item, index) in data.life" :key="index" class="life-div" :body-style="{ padding: '0px' }">
+            <img :src="item.imgSrc" class="image">
             <div class="life-info">
-              <span class="life-title">好吃的汉堡</span>
-              <span class="life-brief">一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球</span>
+              <span class="life-title">{{item.title}}</span>
+              <span class="life-brief">{{item.description}}</span>
             </div>
             <div class="life-btn">
-              <span class="life-date">2019-11-11 11:11:11</span>
+              <span class="life-date">{{item.dateT}}</span>
               <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;">修改</el-button></span>
             </div>
           </el-card>
         </div>
 
         <el-divider>时光相册</el-divider>
-        <div class="case">
+        <div class="case" v-if="data.album">
           <div class="case-divs">
-            <div v-for="(item,index) in '1234'" :key="index" class="case-div">
-              <div class="case-imgdiv"><img src="../../assets/images/images/bg1.jpg" alt=""></div>
-              <span>xxx</span>
+            <div v-for="(item,index) in data.album" :key="index" class="case-div">
+              <div class="case-imgdiv"><img :src="item.photos[0].url" alt=""></div>
+              <span>
+                <span style="margin-left:0px;font-size:17px;font-weight:bold;">{{item.name}}</span>
+                <span style="margin-right:0px;color:darkgray;">{{item.dateT}}</span>
+              </span>
             </div>
           </div>
         </div>
 
         <el-divider>我的收藏</el-divider>
-        <div class="blog">
-          <el-card shadow="hover" v-for="(item, index) in [1,2,3,4,5]" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
-            <img src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" class="image">
+        <div class="blog" v-if="data.collect">
+          <el-card shadow="hover" v-for="(item, index) in data.collect" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
+            <img :src="item.imgSrc" class="image">
             <div class="blog-info">
-              <span class="blog-title">好吃的汉堡</span>
-              <span class="blog-brief">一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球</span>
+              <span class="blog-title">{{item.title}}</span>
+              <span class="blog-brief">{{item.description}}</span>
             </div>
             <div class="blog-btn">
-              <span class="blog-date">2019-11-11 11:11:11</span>
+              <span class="blog-date">{{item.dateT}}</span>
               <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;">取消收藏</el-button></span>
             </div>
           </el-card>
@@ -121,6 +124,7 @@
 <script>
 import {getUserAssets} from '../../apis/user.js'
 import {isLogin} from '../../utils/auth.js'
+import {UTC2Local} from '../../utils/time'
 var echarts = require('echarts')
   export default {
     name: 'personal',
@@ -161,12 +165,21 @@ var echarts = require('echarts')
             { min: 6, max: 10, message: '长度在6~10个字符', trigger: 'blur' }
           ]
         },
+        data: {},
         isloading: false,
         isloading2: false
       }
     },
     mounted() {
       if(isLogin()) {
+        this.infoForm = {
+          avatar: this.$store.getters.avatar,
+          name: this.$store.getters.name,
+          pwd: this.$store.getters.avatar,
+          sex: this.$store.getters.sex?(this.$store.getters.sex==="0"?"女":"男"):"",
+          birthday: this.$store.getters.birthday?(UTC2Local(this.$store.getters.birthday).split(' ')[0]):null,
+          intro: this.$store.getters.introduction
+        }
         getUserAssets({
           ukeyid: this.$store.getters.keyid
         }).then(res=> {
@@ -174,7 +187,64 @@ var echarts = require('echarts')
             if(res.data.message) {
               this.$message(res.data.message)
             } else {
-              //
+              var ele = document.createElement("div")
+              if(!!res.data.data.blog && res.data.data.blog.length>0) {
+                res.data.data.blog.forEach((el, idx) => {
+                  ele.innerHTML = el.content
+                  el.description = (ele.innerText).substring(0, 100)
+                  let imgs = ele.getElementsByTagName("img")
+                  let src = '../../../static/images/noImage.jpg'
+                  if(imgs && imgs.length>0) {
+                    src = imgs[0].src
+                  }
+                  el.imgSrc = src
+                  el.dateT = UTC2Local(el.updateTime || el.date)
+                  res.data.data.blog[idx] = el
+                })
+              } else { res.data.data.blog = [] }
+              if(!!res.data.data.life && res.data.data.life.length>0) {
+                res.data.data.life.forEach((el, idx) => {
+                  ele.innerHTML = el.content
+                  el.description = (ele.innerText).substring(0, 100)
+                  let imgs = ele.getElementsByTagName("img")
+                  let src = '../../../static/images/noImage.jpg'
+                  if(imgs && imgs.length>0) {
+                    src = imgs[0].src
+                  }
+                  el.imgSrc = src
+                  el.dateT = UTC2Local(el.updateTime || el.date)
+                  res.data.data.life[idx] = el
+                })
+              } else { res.data.data.life = [] }
+              if(!!res.data.data.album && res.data.data.album.length>0) {
+                res.data.data.album.forEach((el, idx) => {
+                  // ele.innerHTML = el.content
+                  // el.description = (ele.innerText).substring(0, 100)
+                  // let imgs = ele.getElementsByTagName("img")
+                  // let src = '../../../static/images/noImage.jpg'
+                  // if(imgs && imgs.length>0) {
+                  //   src = imgs[0].src
+                  // }
+                  // el.imgSrc = src
+                  el.dateT = UTC2Local(el.updateTime || el.date)
+                  res.data.data.album[idx] = el
+                })
+              } else { res.data.data.album = [] }
+              if(!!res.data.data.collect && res.data.data.collect.length>0) {
+                res.data.data.collect.forEach((el, idx) => {
+                  ele.innerHTML = el.content
+                  el.description = (ele.innerText).substring(0, 100)
+                  let imgs = ele.getElementsByTagName("img")
+                  let src = '../../../static/images/noImage.jpg'
+                  if(imgs && imgs.length>0) {
+                    src = imgs[0].src
+                  }
+                  el.imgSrc = src
+                  el.dateT = UTC2Local(el.updateTime || el.date)
+                  res.data.data.collect[idx] = el
+                })
+              } else { res.data.data.collect = [] }
+              this.data = res.data.data
             }
           }
           console.log(res)
@@ -219,19 +289,19 @@ var echarts = require('echarts')
   width: 100%; height: auto; display: flex; flex-flow: row; flex-wrap: wrap; align-content: center;
 }
 .case-div{
-  width: 45%; height: auto; margin: 20px auto; display: flex; flex-flow: column; align-content: center;
+  width: 40%; height: 350px; margin: 20px 5%; display: flex; flex-flow: column; align-content: center;
 }
 .case-imgdiv{
   width: 100%; max-height: calc(100% - 40px); display: flex; flex-flow: row; overflow: hidden;
 }
 .case-imgdiv>img{
-  width: 100%; height: auto; margin: auto;
+  width: 100%; height: 100%; margin: auto;
 }
 .case-div>span{
-  text-align: center; margin: auto; width: auto; line-height: 2em; font-size: 20px;
+  text-align: center; margin: auto; width: calc(100% - 40px); line-height: 2em; font-size: 20px; display: flex; flex-flow: row; justify-content: space-between; padding: 0px 20px;
 }
-.case-div>span{
-  cursor: pointer;
+.case-div>span>span{
+  font-size: 14px; line-height: 20px; margin: auto;
 }
 
 .case-imgdiv img {
@@ -257,7 +327,7 @@ var echarts = require('echarts')
   display:flex; flex-flow:row; width:70%; margin:auto; height: auto; flex-wrap: wrap;
 }
 .blog-div, .life-div{
-  width: 30%; height: 330px; display: flex; flex-flow: column; margin: 20px 1.5%; cursor: pointer;
+  width: 27%; height: 330px; display: flex; flex-flow: column; margin: 20px 3%; cursor: pointer;
 }
 .blog-img, .life-img{
   width: 100%; height: 94px;
@@ -272,13 +342,14 @@ var echarts = require('echarts')
   margin: auto;
 }
 .blog-title, .life-title{
-  width: 100%; font-size: 17px; line-height: 20px; text-align: center;
+  width: 100%; font-size: 17px; line-height: 20px; text-align: center; font-weight: bold; display: -webkit-box; 
+  -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; word-break: break-all;
 }
 .blog-date, .life-date{
-  width: auto; font-size: 12px; line-height: 30px; text-align: center; margin-left: 10px;
+  width: auto; font-size: 12px; line-height: 30px; text-align: center; margin-left: 10px; color: darkgray;
 }
 .blog-brief, .life-brief{
-  width: 100%; height: 36px; font-size: 15px; line-height: 18px; display: -webkit-box; -webkit-box-orient: vertical; 
+  width: 100%; height: 40px; font-size: 15px; line-height: 20px; display: -webkit-box; -webkit-box-orient: vertical; 
   -webkit-line-clamp: 2; overflow: hidden; text-overflow: ellipsis; word-break: break-all;
 }
 .blog-btn, .life-btn{
