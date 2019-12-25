@@ -8,11 +8,13 @@ import 'element-ui/lib/theme-chalk/index.css'
 import './assets/css/el-global.css'
 import 'imagehover.css/css/imagehover.min.css'
 import './assets/css/iconfont/iconfont.css'
+import animated from 'animate.css'
 
 Vue.config.productionTip = false
 
 // Vue.use(echarts)
 Vue.use(elementUI)
+Vue.use(animated)
 
 /* eslint-disable no-new */
 new Vue({
