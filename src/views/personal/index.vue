@@ -36,7 +36,7 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="isEditPwd = false">取 消</el-button>
-          <el-button type="primary" @click="isEditPwd = false">确 定</el-button>
+          <el-button type="primary" @click="updatePwd">确 定</el-button>
         </div>
       </el-dialog>
       <div slot="footer" class="dialog-footer">
@@ -251,6 +251,18 @@ var echarts = require('echarts')
         }).catch(err=> {
           console.error(err)
         })
+      }
+    },
+    methods: {
+      updatePwd() {
+        if(!this.pwd.pwdOld || !this.pwd.pwdNew) {
+          this.$message("密码不可为空！")
+          return
+        }
+        if(this.pwd.pwdOld === this.pwd.pwdNew) {
+          this.$message("原密码与新密码相同！")
+          return
+        }
       }
     }
   }
