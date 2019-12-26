@@ -35,8 +35,8 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="isEditPwd = false">取 消</el-button>
-          <el-button type="primary" @click="updatePwd">确 定</el-button>
+          <el-button @click="isEditPwd = false" :disabled="isloading2">取 消</el-button>
+          <el-button type="primary" @click="updatePwd" :loading="isloading2">确 定</el-button>
         </div>
       </el-dialog>
       <div slot="footer" class="dialog-footer">
@@ -125,6 +125,7 @@
 import {getUserAssets} from '../../apis/user.js'
 import {isLogin} from '../../utils/auth.js'
 import {UTC2Local} from '../../utils/time'
+import { Decrypt, Encrypt } from '../../utils/crypto'
 var echarts = require('echarts')
   export default {
     name: 'personal',
@@ -263,6 +264,14 @@ var echarts = require('echarts')
           this.$message("原密码与新密码相同！")
           return
         }
+        this.isloading2 = true
+        this.$store.dispatch("UpdateInfo", {
+          ukeyid: this.$store.getters.keyid, pwd: {pwdOld: Encrypt(this.pwd.pwdOld), pwdNew: Encrypt(this.pwd.pwdNew)}
+        }).then(res=> {
+          console.log(res)
+        }).catch(err=> {
+          console.error(err)
+        }).finally(()=> {this.isloading2=false})
       }
     }
   }

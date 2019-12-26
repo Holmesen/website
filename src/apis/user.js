@@ -11,3 +11,11 @@ export function getUserAssets(query) {
     params: query
   })
 }
+
+// export function updateInfo(query) {
+//   return service({
+//     url: '/user/update-info',
+//     method: 'get',
+//     params: query
+//   })
+// }

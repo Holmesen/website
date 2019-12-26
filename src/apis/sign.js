@@ -35,3 +35,17 @@ export function getUserInfo(token) {
     }
   })
 }
+
+export function updateInfo(data) {
+  return service({
+    url: '/user/update-info',
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    params: {},
+    data: {
+      data: JSON.stringify(data)
+    }
+  })
+}

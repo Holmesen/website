@@ -1,4 +1,4 @@
-import { login, signup, getUserInfo } from '@/apis/sign'
+import { login, signup, getUserInfo, updateInfo } from '@/apis/sign'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 
 const user = {
@@ -148,6 +148,28 @@ const user = {
         commit('SET_UPDATETIME', '')
         removeToken()
         resolve()
+      })
+    },
+
+    // 更新用户信息
+    UpdateInfo({ commit }, data) {
+      return new Promise(resolve => {
+        updateInfo(data).then(response => {
+          const data = response.data
+          if(data.success && data.data) {
+            setToken(data.data.token)
+            commit('SET_KEYID', data.data.keyid)
+            commit('SET_NAME', data.data.name)
+            commit('SET_AVATAR', data.data.avatar)
+            commit('SET_SEX', data.data.sex)
+            commit('SET_BIRTHDAY', data.data.birthday)
+            commit('SET_INTRODUCTION', data.data.introduction)
+            commit('SET_UPDATETIME', data.data.updateTime)
+          }
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
       })
     }
 
