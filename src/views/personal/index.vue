@@ -1,5 +1,5 @@
 <template>
-  <div class="personal-div">
+  <div class="personal-div" id="id">
     <div class="top-div top-div-intro" v-if="this.showblock=='intro'"></div>
     <div class="top-div top-div-stu" v-if="this.showblock=='stu'"></div>
     <div class="top-div top-div-skill" v-if="this.showblock=='skill'"></div>
@@ -7,7 +7,15 @@
 
     <!-- 修改信息弹出框 -->
     <el-dialog title="修改个人信息" :visible.sync="isEditInfo" width="30%">
-      <el-form :model="infoForm" :rules="rules" ref="infoForm" label-width="60px" class="demo-ruleForm" v-loading="isloading2">
+      <span style="margin: 10px auto;">
+        <el-upload class="avatar-uploader" :action='this.baseURL+"/upload/avatar?keyid="+this.keyid'
+          :show-file-list="false" :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
+          <img v-if="imageLocalUrl" :src="imageLocalUrl" class="avatar">
+          <i v-else class="el-icon-picture-outline-round avatar-uploader-icon"></i>
+        </el-upload>
+        <span style="font-size:13px; font-height:1em; color:#999999; text-align:center;">点击{{imageLocalUrl?"更换":"上传"}}头像</span>
+      </span>
+      <el-form style="margin-top:10px;" :model="infoForm" :rules="rules" ref="infoForm" label-width="60px" class="demo-ruleForm" v-loading="isloading2">
         <el-form-item label="昵称" prop="name">
           <el-input v-model="infoForm.name" placeholder="长度在3~8个字符"></el-input>
         </el-form-item>
@@ -40,20 +48,20 @@
         </div>
       </el-dialog>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="isEditInfo = false">取 消</el-button>
-        <el-button type="primary" @click="isEditInfo = false">确 定</el-button>
+        <el-button @click="isEditInfo = false" :disabled="isloading">取 消</el-button>
+        <el-button type="primary" @click="updateInfo" :loading="isloading">确 定</el-button>
       </div>
     </el-dialog>
 
     <div class="content-div">
       <div class="block-div">
         <div style="display:flex;flex-flow:column;align-content:center;height:auto;width:auto;margin:-130px auto 0px auto;">
-          <img style="height:240px;width:240px;border-radius:50%;margin: 10px auto;" src="../../assets/images/avatar.jpg" alt="">
-          <span style="font-size:35px;font-weight:bold;width:fit-content;height:auto;line-height:2em;margin:10px auto;letter-spacing: 3px; display:flex; padding-left: 34px;">Holmesen<el-button style="margin:auto 10px;" icon="el-icon-edit" size="mini" circle @click="isEditInfo = true"></el-button></span>
+          <img style="height:240px;width:240px;border-radius:50%;margin: 10px auto;" :src="this.infoForm.avatar || '../../assets/images/avatar.jpg'" alt="">
+          <span style="font-size:35px;font-weight:bold;width:fit-content;height:auto;line-height:2em;margin:10px auto;letter-spacing: 3px; display:flex; padding-left: 34px;">{{this.infoForm.name || ""}}<el-button style="margin:auto 10px;" icon="el-icon-edit" size="mini" circle @click="isEditInfo = true"></el-button></span>
         </div>
         <!-- 个人简介 -->
         <div class="intro-div" style="margin-top:0;">
-          <p>一个练习两年半的个人练习生，喜欢唱、跳、rap、篮球</p>
+          <p>{{this.infoForm.intro || "你还没有介绍自己哦~"}}</p>
         </div>
       </div>
 
@@ -131,13 +139,16 @@ var echarts = require('echarts')
     name: 'personal',
     data() {
       return {
+        baseURL: this.$store.getters.base_url,
+        keyid: this.$store.getters.keyid,
+        imageUrl: this.$store.getters.avatar,
+        imageLocalUrl: this.$store.getters.avatar,
         showblock: 'intro',
         isEditInfo: false,
         isEditPwd: false,
         infoForm: {
-          avatar: '',
+          avatar: this.$store.getters.avatar,
           name: '',
-          pwd: '',
           sex: '',
           birthday: null,
           intro: ''
@@ -146,10 +157,6 @@ var echarts = require('echarts')
           name: [
             { required: true, message: '昵称不可为空！', trigger: 'blur' },
             { min: 3, max: 8, message: '长度在3~8个字符', trigger: 'blur' }
-          ],
-          pwd: [
-            { required: true, message: '请设置密码', trigger: 'blur' },
-            { min: 6, max: 10, message: '长度在6~10个字符', trigger: 'blur' }
           ]
         },
         pwd: {
@@ -167,20 +174,14 @@ var echarts = require('echarts')
           ]
         },
         data: {},
+        loading: null,
         isloading: false,
         isloading2: false
       }
     },
     mounted() {
       if(isLogin()) {
-        this.infoForm = {
-          avatar: this.$store.getters.avatar,
-          name: this.$store.getters.name,
-          pwd: this.$store.getters.avatar,
-          sex: this.$store.getters.sex?(this.$store.getters.sex==="0"?"女":"男"):"",
-          birthday: this.$store.getters.birthday?(UTC2Local(this.$store.getters.birthday).split(' ')[0]):null,
-          intro: this.$store.getters.introduction
-        }
+        this.getUserInfo()
         getUserAssets({
           ukeyid: this.$store.getters.keyid
         }).then(res=> {
@@ -219,14 +220,6 @@ var echarts = require('echarts')
               } else { res.data.data.life = [] }
               if(!!res.data.data.album && res.data.data.album.length>0) {
                 res.data.data.album.forEach((el, idx) => {
-                  // ele.innerHTML = el.content
-                  // el.description = (ele.innerText).substring(0, 100)
-                  // let imgs = ele.getElementsByTagName("img")
-                  // let src = '../../../static/images/noImage.jpg'
-                  // if(imgs && imgs.length>0) {
-                  //   src = imgs[0].src
-                  // }
-                  // el.imgSrc = src
                   el.dateT = UTC2Local(el.updateTime || el.date)
                   res.data.data.album[idx] = el
                 })
@@ -252,26 +245,113 @@ var echarts = require('echarts')
         }).catch(err=> {
           console.error(err)
         })
+      } else {
+        this.$message.error("请登录！")
+        this.$router.push({path: "/sign"})
       }
     },
     methods: {
+      getUserInfo() {
+        this.openFullScreen()
+        this.$store.dispatch("GetUserInfo").then(res=> {
+          if(res.success) {
+            this.infoForm = {
+              avatar: res.data[0].avatar,
+              name: res.data[0].name,
+              sex: res.data[0].sex?(res.data[0].sex==="0"?"女":"男"):"",
+              birthday: res.data[0].birthday?(UTC2Local(res.data[0].birthday).split(' ')[0]):null,
+              intro: res.data[0].introduction
+            }
+          } else {
+            this.$message.error(res.message)
+          }
+        }).catch(err=> {
+          console.error(err)
+        }).finally(()=> {this.loading.close()})
+      },
+      // verifi(formName) {
+      //   this.$refs[formName].validate((valid) => {
+      //     debugger
+      //     if (valid) {
+      //       return true
+      //     } else {
+      //       return false
+      //     }
+      //   })
+      // },
       updatePwd() {
         if(!this.pwd.pwdOld || !this.pwd.pwdNew) {
-          this.$message("密码不可为空！")
+          this.$message.error("密码不可为空！")
           return
         }
         if(this.pwd.pwdOld === this.pwd.pwdNew) {
-          this.$message("原密码与新密码相同！")
+          this.$message.error("原密码与新密码相同！")
           return
         }
         this.isloading2 = true
         this.$store.dispatch("UpdateInfo", {
           ukeyid: this.$store.getters.keyid, pwd: {pwdOld: Encrypt(this.pwd.pwdOld), pwdNew: Encrypt(this.pwd.pwdNew)}
         }).then(res=> {
-          console.log(res)
+          if(res.data.success) {
+            this.$message.success("密码修改成功！")
+            this.isEditPwd = false
+          } else {
+            this.$message.error(res.data.message || "密码修改失败！")
+          }
         }).catch(err=> {
           console.error(err)
         }).finally(()=> {this.isloading2=false})
+      },
+      updateInfo() {
+        // if(!this.verifi("infoForm")) return
+        if(!this.infoForm.name) {
+          this.$message.error("用户名不可为空！")
+          return
+        }
+        this.isloading = true
+        if(this.infoForm.birthday) {
+          (this.infoForm.birthday).replace(/\//g, '-')
+        }
+        if(this.infoForm.sex) {
+          this.infoForm.sex = this.infoForm.sex==='男'?'1':'0'
+        }
+        this.$store.dispatch("UpdateInfo", 
+          Object.assign(this.infoForm, {ukeyid: this.$store.getters.keyid, birthday: this.infoForm.birthday.replace(/\//g, '-'), sex: this.infoForm.sex==='男'?'1':'0'})
+        ).then(res=> {
+          if(res.data.success) {
+            this.$message.success("个人信息修改成功！")
+            this.isEditInfo = false
+            this.getUserInfo()
+          } else {
+            this.$message.error(res.data.message || "个人信息修改失败！")
+          }
+        }).catch(err=> {
+          console.error(err)
+        }).finally(()=> {this.isloading=false})
+      },
+      handleAvatarSuccess(res, file) {
+        this.imageLocalUrl = URL.createObjectURL(file.raw)
+        this.imageUrl = this.infoForm.avatar = res.data.path || ''
+      },
+      beforeAvatarUpload(file) {
+        const isJPG = file.type === 'image/jpeg'
+        const isPNG = file.type === 'image/png'
+        const isLt2M = file.size / 1024 / 1024 < 2
+        if (!isJPG && !isPNG) {
+          this.$message.error('上传头像图片只能是 JPG 或 PNG 格式!')
+        }
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 2MB!')
+        }
+        return (isJPG || isPNG) && isLt2M
+      },
+      openFullScreen() {
+        this.loading = this.$loading({
+          lock: true,
+          text: 'loading...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.7)'
+        })
       }
     }
   }
@@ -392,5 +472,22 @@ var echarts = require('echarts')
 
 .image {
   width: 100%; display: block;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9; border-radius: 6px; cursor: pointer; position: relative; overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409EFF;
+}
+.avatar-uploader-icon {
+  font-size: 50px; color: #8c939d; width: 60px; height: 60px; line-height: 60px; text-align: center;
+}
+.avatar {
+  width: 60px; height: 60px; display: block;
+}
+
+ #id /deep/ .el-dialog__body{
+  padding: 10px 20px;
 }
 </style>

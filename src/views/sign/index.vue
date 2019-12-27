@@ -21,7 +21,7 @@
     <div v-if="!issignin" class="signup-div">
       <span style="font-size:20px; line-height:1.5em; text-align:center; font-weight:bold;">注册</span>
       <span style="margin: 10px auto;">
-        <el-upload class="avatar-uploader" :action='this.baseURL+"/upload/avatar"'
+        <el-upload class="avatar-uploader" :action='this.baseURL+"/upload/avatar?keyid="+this.keyid'
           :show-file-list="false" :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
           <img v-if="imageLocalUrl" :src="imageLocalUrl" class="avatar">
           <i v-else class="el-icon-picture-outline-round avatar-uploader-icon"></i>
@@ -64,6 +64,7 @@ import { Decrypt, Encrypt } from '../../utils/crypto'
     data() {
       return {
         baseURL: this.$store.getters.base_url,
+        keyid: this.$store.getters.keyid,
         issignin: true,
         name: '',
         pwd: '',

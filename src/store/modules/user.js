@@ -50,16 +50,18 @@ const user = {
     Login({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
         login(userInfo).then(response => {
-          const data = response.data.data
-          setToken(data.token)
-          commit('SET_TOKEN', data.token)
-          commit('SET_KEYID', data.keyid)
-          commit('SET_NAME', data.name)
-          commit('SET_AVATAR', data.avatar)
-          commit('SET_SEX', data.sex)
-          commit('SET_BIRTHDAY', data.birthday)
-          commit('SET_INTRODUCTION', data.introduction)
-          commit('SET_UPDATETIME', data.updateTime)
+          const data = response.data
+          if(data.success && data.data){
+            setToken(data.token)
+            commit('SET_TOKEN', data.data.token)
+            commit('SET_KEYID', data.data.keyid)
+            commit('SET_NAME', data.data.name)
+            commit('SET_AVATAR', data.data.avatar)
+            commit('SET_SEX', data.data.sex)
+            commit('SET_BIRTHDAY', data.data.birthday)
+            commit('SET_INTRODUCTION', data.data.introduction)
+            commit('SET_UPDATETIME', data.data.updateTime)
+          }
           resolve(response.data)
         }).catch(error => {
           reject(error)
@@ -95,14 +97,16 @@ const user = {
       return new Promise((resolve, reject) => {
         getUserInfo(state.token).then(response => {
           const data = response.data
-          commit('SET_KEYID', data.keyid)
-          commit('SET_NAME', data.name)
-          commit('SET_AVATAR', data.avatar)
-          commit('SET_SEX', data.sex)
-          commit('SET_BIRTHDAY', data.birthday)
-          commit('SET_INTRODUCTION', data.introduction)
-          commit('SET_UPDATETIME', data.updateTime)
-          resolve(response)
+          if(data.success && data.data) {
+            commit('SET_KEYID', data.data[0].keyid)
+            commit('SET_NAME', data.data[0].name)
+            commit('SET_AVATAR', data.data[0].avatar)
+            commit('SET_SEX', data.data[0].sex)
+            commit('SET_BIRTHDAY', data.data[0].birthday)
+            commit('SET_INTRODUCTION', data.data[0].introduction)
+            commit('SET_UPDATETIME', data.data[0].updateTime)
+          }
+          resolve(response.data)
         }).catch(error => {
           reject(error)
         })
