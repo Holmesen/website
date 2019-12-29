@@ -480,7 +480,7 @@ import emoji2 from '../../assets/js/emoji2'
 	width: 100%; height: 100%; background: url('../../assets/images/images/bg3.jpg') no-repeat center; background-size:cover;
 } */
 .content-div{
-	width: 60%; margin: 10px auto; font-size: 18px; line-height: 2em; text-indent: 2em; text-align: left;
+	width: 60%; margin: 10px auto; font-size: 18px; line-height: 2em; text-indent: 0em; text-align: left;
 }
 .operate{
 	display: flex; flex-flow: row; width: 50%; margin: 20px auto;
@@ -538,7 +538,7 @@ import emoji2 from '../../assets/js/emoji2'
 	width: 100%; display: flex; flex-flow: column;
 }
 .comment-bottom>span{
-	font-size: 15px; line-height: 1.5em; text-align: left; padding-left: 50px; text-indent: 2em; display: flex; flex-flow: row;
+	font-size: 15px; line-height: 1.5em; text-align: left; padding-left: 50px; text-indent: 0em; display: flex; flex-flow: row;
 }
 .comment-bottom>span p{
 	display: block; flex-flow: row;

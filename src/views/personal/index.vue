@@ -69,14 +69,14 @@
         <el-divider>我的博客</el-divider>
         <div class="blog" v-if="data.blog">
           <el-card shadow="hover" v-for="(item, index) in data.blog" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
-            <img :src="item.imgSrc" class="image">
-            <div class="blog-info">
+            <img @click="goDetail(item.keyid, 'blog')" :src="item.imgSrc" class="image">
+            <div class="blog-info" style="cursor: auto;">
               <span class="blog-title">{{item.title}}</span>
               <span class="blog-brief">{{item.description}}</span>
             </div>
             <div class="blog-btn">
-              <span class="blog-date">{{item.dateT}}</span>
-              <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;">修改</el-button></span>
+              <span class="blog-date" style="cursor: auto;">{{item.dateT}}</span>
+              <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;" @click.stop="editDetail(item.keyid, 'blog')">修改</el-button></span>
             </div>
           </el-card>
         </div>
@@ -84,14 +84,14 @@
         <el-divider>生活记事</el-divider>
         <div class="life" v-if="data.life">
           <el-card shadow="hover" v-for="(item, index) in data.life" :key="index" class="life-div" :body-style="{ padding: '0px' }">
-            <img :src="item.imgSrc" class="image">
-            <div class="life-info">
+            <img @click="goDetail(item.keyid, 'life')" :src="item.imgSrc" class="image">
+            <div class="life-info" style="cursor: auto;">
               <span class="life-title">{{item.title}}</span>
               <span class="life-brief">{{item.description}}</span>
             </div>
             <div class="life-btn">
-              <span class="life-date">{{item.dateT}}</span>
-              <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;">修改</el-button></span>
+              <span class="life-date" style="cursor: auto;">{{item.dateT}}</span>
+              <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;" @click.stop="editDetail(item.keyid, 'life')">修改</el-button></span>
             </div>
           </el-card>
         </div>
@@ -99,12 +99,23 @@
         <el-divider>时光相册</el-divider>
         <div class="case" v-if="data.album">
           <div class="case-divs">
-            <div v-for="(item,index) in data.album" :key="index" class="case-div">
+            <div v-for="(item,index) in data.album" :key="index" class="case-div" @click="goDetail(item.keyid, 'album')">
               <div class="case-imgdiv"><img :src="item.photos[0].url" alt=""></div>
-              <span>
+              <!-- <span>
                 <span style="margin-left:0px;font-size:17px;font-weight:bold;">{{item.name}}</span>
                 <span style="margin-right:0px;color:darkgray;">{{item.dateT}}</span>
-              </span>
+              </span> -->
+              <!-- <div class="blog-info" style="cursor: auto;">
+                <span class="blog-title">{{item.name}}</span>
+                <span class="blog-brief">{{item.description}}</span>
+              </div> -->
+              <div style="width:calc(100% - 2px);padding: 7px 0 0 0;display:flex;flex-flow:column;">
+                <span class="blog-title">{{item.name}}</span>
+                <div class="blog-btn">
+                  <span class="blog-date" style="cursor: auto;">{{item.dateT}}</span>
+                  <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;" @click.stop="editDetail(item.keyid, 'album')">编辑</el-button></span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -112,14 +123,14 @@
         <el-divider>我的收藏</el-divider>
         <div class="blog" v-if="data.collect">
           <el-card shadow="hover" v-for="(item, index) in data.collect" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
-            <img :src="item.imgSrc" class="image">
-            <div class="blog-info">
+            <img @click="goDetail(item.keyid, item.tag)" :src="item.imgSrc" class="image">
+            <div class="blog-info" style="cursor: auto;">
               <span class="blog-title">{{item.title}}</span>
               <span class="blog-brief">{{item.description}}</span>
             </div>
             <div class="blog-btn">
-              <span class="blog-date">{{item.dateT}}</span>
-              <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;">取消收藏</el-button></span>
+              <span class="blog-date" style="cursor: auto;">{{item.dateT}}</span>
+              <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;" @click="unOperate(item.keyid, 'collect')">取消收藏</el-button></span>
             </div>
           </el-card>
         </div>
@@ -130,7 +141,7 @@
 </template>
 
 <script>
-import {getUserAssets} from '../../apis/user.js'
+import {getUserAssets, unoperate} from '../../apis/user.js'
 import {isLogin} from '../../utils/auth.js'
 import {UTC2Local} from '../../utils/time'
 import { Decrypt, Encrypt } from '../../utils/crypto'
@@ -345,6 +356,48 @@ var echarts = require('echarts')
         }
         return (isJPG || isPNG) && isLt2M
       },
+      goDetail(keyid, tag) {
+        switch(tag) {
+          case "blog": this.$router.push({path: "/blog/blogInfo/"+keyid}); break
+          case "life": this.$router.push({path: "/life/lifeInfo/"+keyid}); break
+          case "album": this.$router.push({path: "/album/albumInfo/"+keyid}); break
+          default : this.$router.push({path: "/blank"})
+        }
+      },
+      editDetail(keyid, tag) {
+        switch(tag) {
+          case "blog": this.$router.push({path: "/blog/writeBlog/"+this.keyid+"?keyid="+keyid}); break
+          case "life": this.$router.push({path: "/life/writeLife/"+this.keyid+"?keyid="+keyid}); break
+          case "album": this.$router.push({path: "/album/upload?keyid="+keyid}); break
+          default : this.$router.push({path: "/blank"})
+        }
+      },
+      unOperate(keyid, tag) {
+        let obj = {}
+        switch(tag) {
+          case "collect": obj = {ukeyid: this.keyid, ckeyid: keyid, type: tag}; break
+          default : this.$message.error("操作失败"); return 
+        }
+        unoperate(obj).then(res=> {
+          if(res.data.success) {
+            getUserAssets({tag: "collect"}).then(res2=> {
+              if(res2.data.success) {
+                this.data.collect = res2.data.data || []
+              } else {
+                this.$message.error(res2.data.message || "获取个人收藏失败")
+              }
+            }).catch(err=> {
+              console.error(err)
+              this.$message.error("获取个人收藏失败")
+            })
+          } else {
+            this.$message.error(res.data.message || "操作失败")
+          }
+        }).catch(err=> {
+          console.error(err)
+          this.$message.error("操作失败")
+        })
+      },
       openFullScreen() {
         this.loading = this.$loading({
           lock: true,
@@ -383,27 +436,28 @@ var echarts = require('echarts')
   display: flex; flex-flow: column; margin: 40px auto;
 }
 
-.case{
+/* .case{
   display: flex; flex-flow: row; width: 70%; height: auto; align-content: center; margin: 20px auto;
-}
+} */
 .case-divs{
   width: 100%; height: auto; display: flex; flex-flow: row; flex-wrap: wrap; align-content: center;
 }
 .case-div{
-  width: 40%; height: 350px; margin: 20px 5%; display: flex; flex-flow: column; align-content: center;
+  width: 27%; height: 260px; display: flex; flex-flow: column; margin: 20px 3%; cursor: pointer;
+  border:solid 1px #dfdfdf;
 }
 .case-imgdiv{
-  width: 100%; max-height: calc(100% - 40px); display: flex; flex-flow: row; overflow: hidden;
+  width: 100%; height: calc(100% - 40px); display: flex; flex-flow: row; overflow: hidden;
 }
-.case-imgdiv>img{
+/* .case-imgdiv>img{
   width: 100%; height: 100%; margin: auto;
-}
-.case-div>span{
-  text-align: center; margin: auto; width: calc(100% - 40px); line-height: 2em; font-size: 20px; display: flex; flex-flow: row; justify-content: space-between; padding: 0px 20px;
+} */
+/* .case-div>span{
+  text-align: center; margin: auto; width: calc(100% - 40px); height: 40px; line-height: 2em; font-size: 20px; display: flex; flex-flow: row; justify-content: space-between; padding: 0px 20px;
 }
 .case-div>span>span{
   font-size: 14px; line-height: 20px; margin: auto;
-}
+} */
 
 .case-imgdiv img {
   display: block; border: 0; width: 100%; transform: scale(1); transition: all 1s ease 0s;
@@ -424,18 +478,18 @@ var echarts = require('echarts')
 .block-div /deep/ .el-divider__text{
   font-size: 18px; font-weight: bold; color: darkgray;
 }
-.blog, .life{
+.blog, .life, .case{
   display:flex; flex-flow:row; width:70%; margin:auto; height: auto; flex-wrap: wrap;
 }
 .blog-div, .life-div{
   width: 27%; height: 330px; display: flex; flex-flow: column; margin: 20px 3%; cursor: pointer;
 }
-.blog-img, .life-img{
+/* .blog-img, .life-img, .case-imgdiv{
   width: 100%; height: 94px;
 }
-.blog-img>img, .life-img>img{
-  width: 100%; height: 100%;
-}
+.blog-img>img, .life-img>img, .case-imgdiv>img{
+  width: 100%; height: 100%; margin: auto;
+} */
 .blog-info, .life-info{
   width: calc(100% - 20px); display: flex; flex-flow: column; height: 76px; padding: 5px 10px;
 }

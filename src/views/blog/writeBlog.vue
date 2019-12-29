@@ -339,7 +339,7 @@ import emoji2 from '../../assets/js/emoji2'
       openFullScreen() {
         this.loading = this.$loading({
           lock: true,
-          text: '博客发布ing...',
+          text: 'loading...',
           spinner: 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)'
         })
@@ -402,7 +402,7 @@ import emoji2 from '../../assets/js/emoji2'
   font-weight: bold; cursor: pointer; border-bottom: solid 1px gray;
 }
 #article-list{
-  width: 100%; height: auto; display: flex; flex-flow: column; align-content: center;
+  width: 100%; height: 100%; max-height: 100%; overflow-y: auto; display: flex; flex-flow: column; align-content: center;
 }
 #article-list>span{
   height: auto; display: flex; text-align: left; font-size: 16px; justify-content: space-between; border-left: solid 3px rgba(102, 102, 102, 0);

@@ -12,10 +12,14 @@ export function getUserAssets(query) {
   })
 }
 
-// export function updateInfo(query) {
-//   return service({
-//     url: '/user/update-info',
-//     method: 'get',
-//     params: query
-//   })
-// }
+/**
+ * 取消操作（收藏）
+ * @param {Object} query 
+ */
+export function unoperate(query) {
+  return service({
+    url: '/user/unoperate',
+    method: 'get',
+    params: query
+  })
+}

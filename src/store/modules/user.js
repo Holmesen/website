@@ -52,7 +52,7 @@ const user = {
         login(userInfo).then(response => {
           const data = response.data
           if(data.success && data.data){
-            setToken(data.token)
+            setToken(data.data.token)
             commit('SET_TOKEN', data.data.token)
             commit('SET_KEYID', data.data.keyid)
             commit('SET_NAME', data.data.name)
