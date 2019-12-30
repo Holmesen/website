@@ -379,6 +379,9 @@ import emoji2 from '../../assets/js/emoji2'
 #editor /deep/ .w-e-text-container{ 
   height:calc(100% - 31.2px) !important;
 }
+#editor /deep/ img{
+  max-width: 100%;
+}
 #content img{
   height: 50px;
 }

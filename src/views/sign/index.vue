@@ -44,8 +44,8 @@
         <el-form-item label="生日" prop="birthday">
           <el-date-picker value-format="yyyy-MM-dd" type="date" placeholder="选择日期" v-model="infoForm.birthday" style="width: 100%;"></el-date-picker>
         </el-form-item>
-        <el-form-item label="简述" prop="intro">
-          <el-input type="textarea" v-model="infoForm.intro"></el-input>
+        <el-form-item label="简述" prop="introduction">
+          <el-input type="textarea" v-model="infoForm.introduction"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" style="width:100%;" @click="signup">注册</el-button>
@@ -76,7 +76,7 @@ import { Decrypt, Encrypt } from '../../utils/crypto'
           pwd: '',
           sex: '',
           birthday: null,
-          intro: ''
+          introduction: ''
         },
         rules: {
           name: [

@@ -273,7 +273,7 @@ export default {
     },
     // 获取相册列表
     getAlbumList() {
-      getAlbumList({}).then(res=> {
+      getAlbumList({ukeyid: this.$store.getters.keyid}).then(res=> {
         if(res.data.success) {
           if(res.data.data && res.data.data.length>0) {
             res.data.data.forEach((el,idx) => {
