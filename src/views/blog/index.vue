@@ -56,7 +56,7 @@ import {UTC2Local} from '../../utils/time'
 						var ele = document.createElement("div")
 						res.data.data.forEach(el => {
 							ele.innerHTML = el.content
-							el.description = (ele.innerText).substring(0, 100)
+							el.description = (ele.innerText).trim().substring(0, 100)
 							let imgs = ele.getElementsByTagName("img")
 							let src = '../../../static/images/noImage.jpg'
 							if(imgs && imgs.length>0) {

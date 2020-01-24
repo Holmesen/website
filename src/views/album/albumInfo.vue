@@ -55,6 +55,11 @@ import {getAlbumList} from '../../apis/album.js'
         this.id = this.$route.params.id
         getAlbumList({keyid: this.id}).then(res=> {
           if(res.data.success) {
+            res.data.data[0]['photos'].forEach((el, idx) => {
+              if(el.url.indexOf('cdn.pixabay.com')!==-1 && el.url.indexOf('_150')!==-1){
+                res.data.data[0]['photos'][idx]['url'] = el.url.replace(/_150/g,'_960_720') // _1280; _1920;
+              }
+            });
             this.album = res.data.data[0]
             this.$refs.swiperTop.swiper.loopDestroy()
             this.$refs.swiperThumbs.swiper.loopDestroy()

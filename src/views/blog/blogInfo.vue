@@ -555,4 +555,14 @@ import emoji2 from '../../assets/js/emoji2'
 .commentDate{
 	color: #ababab;
 }
+
+#blog-content{
+	overflow-x: hidden;
+}
+#blog-content /deep/ span{
+	word-break: break-all !important;
+}
+#blog-content /deep/ img{
+	max-width: 100% !important; height: auto !important;
+}
 </style>

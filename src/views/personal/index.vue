@@ -65,7 +65,7 @@
         </div>
       </div>
 
-      <div class="block-div">
+      <div class="block-div" style="padding-bottom: 40px;">
         <el-divider>我的博客</el-divider>
         <div class="blog" v-if="data.blog">
           <el-card shadow="hover" v-for="(item, index) in data.blog" :key="index" class="blog-div" :body-style="{ padding: '0px' }">
@@ -79,6 +79,7 @@
               <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;" @click.stop="editDetail(item.keyid, 'blog')">修改</el-button></span>
             </div>
           </el-card>
+          <h3 v-if="!data.blog || data.blog.length===0" style="text-align:center;margin: 10px auto;">你还没有博客，快去<a style="color:lightskyblue;cursor: pointer;text-decoration: none;" :href='"/blog/writeBlog/"+this.keyid'>撰写</a>一篇吧~</h3>
         </div>
 
         <el-divider>生活记事</el-divider>
@@ -94,6 +95,7 @@
               <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;" @click.stop="editDetail(item.keyid, 'life')">修改</el-button></span>
             </div>
           </el-card>
+          <h3 v-if="!data.life || data.life.length===0" style="text-align:center;margin: 10px auto;">你还没有生活记事，快去<a style="color:lightskyblue;cursor: pointer;text-decoration: none;" :href='"/life/writeLife/"+this.keyid'>添加</a>一篇吧~</h3>
         </div>
 
         <el-divider>时光相册</el-divider>
@@ -117,6 +119,7 @@
                 </div>
               </div>
             </div>
+            <h3 v-if="!data.album || data.album.length===0" style="text-align:center;margin: 10px auto;">你还没有相册，快去<a style="color:lightskyblue;cursor: pointer;text-decoration: none;" href="/album/upload">新建</a>一个吧~</h3>
           </div>
         </div>
 
@@ -133,6 +136,7 @@
               <span><el-button type="text" style="height:30px;line-height:30px;float:right;margin:auto 10px auto auto;padding:0;" @click="unOperate(item.keyid, 'collect')">取消收藏</el-button></span>
             </div>
           </el-card>
+          <h3 v-if="!data.album || data.album.length===0" style="text-align:center;margin: 10px auto;">你还没有任何收藏，看到喜欢的就收藏起来吧~</h3>
         </div>
       </div>
 
