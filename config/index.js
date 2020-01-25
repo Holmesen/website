@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/formalapi': {
-        target: 'https://apis.holmesen.xyz',
+        target: 'http://apis.holmesen.xyz:3000',
         changeOrigin: true,
         pathRewrite: {
           '^/formalapi': ''
@@ -58,7 +58,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    assetsPublicPath: './',
 
     /**
      * Source Maps
