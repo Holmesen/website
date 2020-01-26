@@ -538,7 +538,7 @@ import emoji2 from '../../assets/js/emoji2'
 	width: 100%; display: flex; flex-flow: column;
 }
 .comment-bottom>span{
-	font-size: 15px; line-height: 1.5em; text-align: left; padding-left: 50px; text-indent: 0em; display: flex; flex-flow: row;
+	font-size: 15px; line-height: 1.5em; text-align: left; padding-left: 50px; text-indent: 0em; display: flex; flex-flow: column;
 }
 .comment-bottom>span p{
 	display: block; flex-flow: row;

@@ -3,7 +3,7 @@ import { getToken, setToken, removeToken } from '@/utils/auth'
 
 const user = {
   state: {
-    base_url: 'http://localhost:3000',
+    base_url: process.env.NODE_ENV === 'production'?'http://apis.holmesen.xyz:3000':'http://localhost:3000',
     token: getToken(),
     keyid: '',
     name: '',
