@@ -38,7 +38,7 @@
         <div class="fold" @click="isFold=!isFold" :title="isFold?'展开相册信息':'收起相册信息'"><i v-show="!isFold" class="el-icon-caret-top"></i><i v-show="isFold" class="el-icon-caret-bottom"></i></div>
       </div>
       <div class="picture" :class="{'has-fold2':isFold}">
-        <el-upload ref="upload" :file-list="active.photos" :auto-upload="true" multiple :action='"http://localhost:3000/upload/album-image?keyid="+ukeyid' list-type="picture-card" :before-remove="beforeRemove" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+        <el-upload ref="upload" :file-list="active.photos" :auto-upload="true" multiple :action='base_url+"/upload/album-image?keyid="+ukeyid' list-type="picture-card" :before-remove="beforeRemove" :on-success="pictureUploadSuccess" :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
           <i class="el-icon-plus"></i>
         </el-upload>
         <el-dialog :visible.sync="dialogVisible">
@@ -56,6 +56,7 @@ export default {
   name: 'name',
   data() {
     return {
+      base_url: this.$store.getters.base_url,
       ukeyid: this.$store.getters.keyid,
       user: this.$store.getters.name,
       dialogImageUrl: '',

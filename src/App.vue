@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <myheader></myheader>
-    <div style="height:90px;width:100%;"></div>
-    <div style="height: calc(100vh - 90px);">
+    <!-- <myheader></myheader>
+    <div style="height:90px;width:100%;"></div> -->
+    <div style="height: 100vh;">
       <router-view class="routerView" />
     </div>
 
@@ -75,7 +75,7 @@ export default {
   position: relative;
 }
 *{
-  font-family: cursive;
+  /* font-family: cursive; */
 }
 /* .mask{
   position: absolute; top: 0; left: 0; z-index: 999999; background-color: rgba(50, 50, 50, 0.5); width: 100%; height: 100%;

@@ -98,6 +98,7 @@ import { Decrypt, Encrypt } from '../../utils/crypto'
         this.$store.dispatch('Login', { name: this.name, pwd: Encrypt(this.pwd) }).then(res=> {
           if(res && (res.success || res.success==='true')) {
             this.$message.success(res.message || '登录成功')
+            this.$router.push('/personal')
           } else {
             this.$message(res.message || res.msg)
           }
