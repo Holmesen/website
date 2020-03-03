@@ -84,23 +84,26 @@
       </div>
     </div>
     <div class="contain-div contact-bg">
-      <div class="_contact" style="background-color: rgba(0,0,0,0.2);"></div>
+      <div class="_contact"></div>
       <div class="contact_">
         <div class="contact">
           <strong>Contact Me</strong>
-          <div>
-            <input type="text" style="margin-right:10px;" placeholder="Name">
-            <input type="text" style="margin-left:10px;" placeholder="Email / QQ / WeChat / Mobile">
-          </div>
-          <div>
-            <input type="text" placeholder="Subject">
-          </div>
-          <div>
-            <!-- <input type="textarea" placeholder="Message" style="height:90px;"> -->
-            <textarea rows="3" style="height:90px;font-weight:bold;" placeholder="Message"></textarea>
-          </div>
-          <div>
-            <button>Submit</button>
+          <div class="contact-me">
+            <div class="contact-way">
+              <span><i class="el-icon-message"></i>holmesenlin@gmail.com</span>
+              <span><i class="el-icon-office-building"></i>厦门云当网络科技有限公司</span>
+              <span><i class="el-icon-location-outline"></i>福建省厦门市湖里区</span>
+              <span><img src="../../assets/images/home/map.png" alt="" style="width:100%;height:100%;"></span>
+            </div>
+            <div class="contact-msg">
+              <div>
+                <input type="text" placeholder="Name">
+                <input type="text" placeholder="Email / QQ / WeChat / Mobile">
+                <input type="text" placeholder="Subject">
+                <textarea rows="3" style="height: 90px;font-weight: bold;" placeholder="Message"></textarea>
+                <button>Submit</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -298,7 +301,7 @@ import $ from 'jquery'
 }
 .skill{
   padding: 20px 10px; display: flex; flex-flow: column; min-width: 120px; margin:15px auto; max-width: 29%;
-  background-color: white; box-shadow: 0 0 4px 2px #cdcdcd; border-radius: 5px;
+  background-color: white; box-shadow: 0 0 4px 2px #cdcdcd; border-radius: 5px; min-width: 240px;
 }
 .skill-cyclo{
   width: 100px; height: 100px; border-radius: 50%; margin: auto; background: white; border: solid 10px red; 
@@ -315,10 +318,10 @@ import $ from 'jquery'
   background-attachment:fixed;
 }
 .count{
-  width: 70%; display: flex; flex-flow: row; margin: auto;
+  width: 70%; display: flex; flex-flow: row; margin: auto; min-width: 560px;
 }
 .count-div{
-  width: 22%; padding: 20px 0; margin: auto;
+  width: 22%; padding: 20px 0; margin: auto; min-width: 125px;
 }
 .count-div>span{
   font-size: 30px; line-height: 1; font-weight: bold; text-align: center; margin: 10px auto; color: snow;
@@ -329,7 +332,7 @@ import $ from 'jquery'
 }
 
 .blog,.picture{
-  display: flex; flex-flow: row; flex-wrap: wrap;
+  display: flex; flex-flow: row; flex-wrap: wrap; max-width:1300px;
 }
 .blog-div,.picture-div{
   width: 300px; padding: 15px; display: flex; flex-flow: column; margin: 15px auto; 
@@ -383,17 +386,36 @@ import $ from 'jquery'
   width: 70%; margin: auto; display: flex; flex-flow: column;
 }
 .contact>strong{
-  font-size: 50px; letter-spacing: 2px; line-height: 2; text-align: center;
+  font-size: 40px; letter-spacing: 2px; line-height: 2; text-align: center; color: white;
 }
-.contact>div{
-  width: 100%; margin: 10px auto; display: flex; flex-flow: row;
+.contact-me{
+  width: 100%; display: flex; flex-flow: row; justify-content: space-between;
 }
-.contact>div>input,.contact>div>textarea{
-  width: auto; flex-grow: 1; height: 30px; border: solid 1px #dadada; padding: 10px; color: black;
-  letter-spacing: 1px; background-color: white; margin: auto; font-size: 25px; line-height: 30px;
+.contact-way{
+  width: 50%; height: 100%; display: flex; flex-flow: column; padding: 10px; border-right: dashed 1px white;
 }
-.contact>div>button{
-  font-weight: bold; cursor: pointer; margin: auto; padding: 10px 30px; height: 60px; font-size: 30px; 
+.contact-way>span{
+  width: 100%; display: flex; flex-flow: row; margin: 0 auto 20px 0; font-size: 16px; line-height: 20px; 
+  letter-spacing: 1px; color: white;
+}
+.contact-way>span>i{
+  font-size: 18px; line-height: 20px; margin-right: 7px;
+}
+.contact-way>span:last-child{
+  width: 300px; border: solid 5px white;
+}
+.contact-msg{
+  width: 50%; height: auto; display: flex; flex-flow: column; padding: 10px;
+}
+.contact-msg>div{
+  width: 400px; margin: 0 0 0 auto; display: flex; flex-flow: column;
+}
+.contact-msg>div>input,.contact-msg>div>textarea{
+  width: calc(100% - 20px); height: 20px; border: solid 1px #dadada; padding: 10px; color: black;
+  letter-spacing: 1px; background-color: white; margin-bottom: 23px; font-size: 17px; line-height: 20px;
+}
+.contact-msg>div>button{
+  font-weight: bold; cursor: pointer; margin: auto; padding: 10px 30px; height: 50px; font-size: 20px; 
   background-color: dodgerblue; color: white; letter-spacing: 3px;
 }
 
