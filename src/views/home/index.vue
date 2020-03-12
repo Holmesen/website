@@ -83,7 +83,7 @@
         </div>
       </div>
     </div>
-    <div class="contain-div contact-bg">
+    <div class="contain-div contact-bg" style="padding-bottom:10px;">
       <div class="_contact"></div>
       <div class="contact_">
         <div class="contact">
@@ -107,6 +107,10 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="bottom-div">
+      <span>Copyright © 2020.Holmesen All rights reserved. by Holmesen</span>
+      <span>闽ICP备18014955号-2</span>
     </div>
   </div>
 </template>
@@ -229,6 +233,13 @@ import $ from 'jquery'
 </script>
 
 <style scoped>
+.bottom-div{
+  width: 100%; padding: 10px 0; display: flex; flex-flow: column; align-content: center; 
+  background-color: #343434; color: white;
+}
+.bottom-div>span{
+  font-size: 14px; line-height: 2rem; width: 100%; text-align: center; margin: 0 auto;
+}
 .quote{
   width: 70%; display: flex; flex-flow: column; margin: auto; 
 }
