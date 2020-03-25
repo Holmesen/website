@@ -1,7 +1,17 @@
 <template>
   <div id="home-div">
+    <!-- <div id="head" :class="{'head-abso':(headState==='abso'), 'head-fixed':(headState==='fixed')}">
+      <div class="head-div">
+        <span class="head-logo"><img src="../../assets/logo-Holmesen.png" alt=""></span>
+        <span class="head-menus">
+          <span :class="{'actived-menu':activedMenu===1}" @click="clickMenu(1)">菜单一</span>
+          <span :class="{'actived-menu':activedMenu===2}" @click="clickMenu(2)">菜单二</span>
+          <span :class="{'actived-menu':activedMenu===3}" @click="clickMenu(3)">菜单三</span>
+        </span>
+      </div>
+    </div> -->
     <!-- <div class="home-cover"></div> -->
-    <!-- <myheader></myheader> -->
+    <myheader :menus='menus'></myheader>
     <!-- <div class="bg-img"></div> -->
     <div class="contain-div home-bg">
       <div class="_welcome"></div>
@@ -19,18 +29,47 @@
       </div>
       <div class="contain2 skill-div">
         <div class="skill" v-for="(item, index) in skillData" :key="index">
-          <!-- <div class="skill-cyclo"></div> -->
           <span class="skill-name">{{item.name}}</span>
           <span style="width:126px;margin:auto;"><el-progress type="circle" :percentage="item.value"></el-progress></span>
           <span class="skill-sub">{{item.subscript}}</span>
         </div>
+        <!-- <div class="skill skill-html">
+          <span class="skill-name">HTML</span>
+          <span style="width:126px;margin:auto;"><el-progress type="circle" :percentage="10"></el-progress></span>
+          <span class="skill-sub">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</span>
+        </div>
+        <div class="skill skill-css">
+          <span class="skill-name">CSS</span>
+          <span style="width:126px;margin:auto;"><el-progress type="circle" :percentage="20"></el-progress></span>
+          <span class="skill-sub">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</span>
+        </div>
+        <div class="skill skill-js">
+          <span class="skill-name">JavaScript</span>
+          <span style="width:126px;margin:auto;"><el-progress type="circle" :percentage="30"></el-progress></span>
+          <span class="skill-sub">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</span>
+        </div>
+        <div class="skill skill-vue">
+          <span class="skill-name">Vue</span>
+          <span style="width:126px;margin:auto;"><el-progress type="circle" :percentage="40"></el-progress></span>
+          <span class="skill-sub">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</span>
+        </div>
+        <div class="skill skill-node">
+          <span class="skill-name">NodeJS</span>
+          <span style="width:126px;margin:auto;"><el-progress type="circle" :percentage="50"></el-progress></span>
+          <span class="skill-sub">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</span>
+        </div>
+        <div class="skill skill-mini">
+          <span class="skill-name">MiniProgram</span>
+          <span style="width:126px;margin:auto;"><el-progress type="circle" :percentage="60"></el-progress></span>
+          <span class="skill-sub">Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident</span>
+        </div> -->
       </div>
     </div>
     <div class="contain-div count-bg">
       <div class="_count"></div>
       <div class="count_">
         <div class="count">
-          <div class="count-div" v-for="(item,index) in countData" :key="index">
+          <div class="count-div" :class="'count-div'+index" v-for="(item,index) in countData" :key="index">
             <span id="count-icon"><i :class="item.icon"></i></span>
             <span>{{item.value}}</span>
             <span>{{item.name}}</span>
@@ -116,12 +155,14 @@
 </template>
 
 <script>
-// import myheader from '@/components/header/index.vue'
+import myheader from '@/components/header/index2.vue'
+import ScrollReveal from 'scrollreveal'
 import $ from 'jquery'
   export default {
     name: 'home',
     data(){
       return {
+        ScrollReveal: ScrollReveal(),
         skillData: [
           {
             name: 'HTML',
@@ -175,13 +216,43 @@ import $ from 'jquery'
             value: '140',
             icon: 'el-icon-headset'
           }
+        ],
+        menus: [
+          { name: '首页', route: '/' },
+          { name: '个人博客', route: '/blog' },
+          { name: '时光相册', route: '/album' },
+          { name: '生活记事', route: '/life' }
+          // { name: '个人中心', route: '/personal' }
         ]
+        // headState: 'abso',
+        // activedMenu: 1
       }
     },
     components: {
-      // myheader
+      myheader
     },
     mounted(){
+      // 滚动动画
+      this.ScrollReveal.reveal('.skill,.blog-div,.picture-div',{
+        distance: '50px',
+        origin: 'bottom',
+        duration: 1000,
+        easing: 'ease-in-out',
+        rotate: 0,
+        scale: 0.5,
+        delay: 200,
+        reset: true
+      })
+      this.ScrollReveal.reveal('.count-div,.quote-div',{
+        distance: '50px',
+        origin: 'top',
+        duration: 1000,
+        delay: 200,
+        easing: 'ease-in-out',
+        rotate: { x: 65 },
+        reset: true
+      })
+      
       if ($('.text-slider').length == 1) {
         var typed_strings = $('.text-slider-items').text()
         var typed = new Typed('.text-slider', {

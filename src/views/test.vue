@@ -57,7 +57,14 @@ import {verifyJWT} from '../apis/test'
         })
       },
       initAnimate() {
-
+        this.visualH = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+        this.animateEls.forEach((el,idx) => {
+          if(el.el.getBoundingClientRect().top < this.visualH && el.el.getBoundingClientRect().top > 0){
+            el.el.classList.add(el.animateName)
+          }else{
+            el.el.classList.remove(el.animateName)
+          }
+        })
       }
     },
     mounted() {
@@ -70,22 +77,16 @@ import {verifyJWT} from '../apis/test'
       ]
       this.visualH = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
       this.animateEls.forEach(el => {
-        if(el.el.getBoundingClientRect().top<this.visualH){
+        if (el.el.getBoundingClientRect().top<this.visualH) {
           el.el.classList.add(el.animateName)
-        }else{
+        } else {
           el.el.classList.remove(el.animateName)
         }
       })
-      window.onscroll = ()=> {
-        this.visualH = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-        this.animateEls.forEach((el,idx) => {
-          if(el.el.getBoundingClientRect().top < this.visualH && el.el.getBoundingClientRect().top > 0){
-            el.el.classList.add(el.animateName)
-          }else{
-            el.el.classList.remove(el.animateName)
-          }
-        })
-      }
+      window.addEventListener('scroll', this.initAnimate)
+    },
+    destroyed() {
+      window.removeEventListener('scroll', this.initAnimate)
     }
   }
 </script>
